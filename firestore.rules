@@ -1,21 +1,108 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() {
-      return request.auth != null;
+    // 1. Global Default Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
     }
 
     // Health check test connection path
     match /test/{docId} {
-      allow read: if true;
+      allow read, write: if true;
     }
 
-    // Merchant profile and all store sub-collections (customers, products, bills, expenses)
-    match /merchants/{merchantId} {
-      allow read, write: if true;
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
 
-      match /{allSubcollections=**} {
-        allow read, write: if true;
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidMerchant(data) {
+      return data.shopName is string && data.shopName.size() <= 120 &&
+             data.country == 'IN';
+    }
+
+    function isValidCustomer(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.phone is string && data.phone.size() <= 20 &&
+             data.totalUdhaar is number;
+    }
+
+    function isValidLedgerEntry(data) {
+      return data.customerId is string &&
+             data.type in ['DEBIT', 'CREDIT'] &&
+             data.amount is number && data.amount >= 0 &&
+             data.balanceAfter is number;
+    }
+
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+             data.price is number && data.price >= 0 &&
+             data.stock is number;
+    }
+
+    function isValidBill(data) {
+      return data.invoiceNumber is string && data.invoiceNumber.size() <= 60 &&
+             data.grandTotal is number && data.grandTotal >= 0 &&
+             data.paymentMode is string;
+    }
+
+    function isValidStaff(data) {
+      return data.name is string && data.name.size() <= 100 &&
+             data.role in ['owner', 'manager', 'cashier'] &&
+             data.pin is string && data.pin.size() <= 10;
+    }
+
+    // Store Merchants
+    match /merchants/{merchantId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(merchantId) && isValidMerchant(incoming());
+      allow delete: if isSignedIn();
+
+      // Bills Collection
+      match /bills/{billId} {
+        allow get, list: if true;
+        allow create, update: if isValidId(billId) && isValidBill(incoming());
+        allow delete: if isSignedIn();
+      }
+
+      // Customers & Udhaar Khata
+      match /customers/{customerId} {
+        allow get, list: if true;
+        allow create, update: if isValidId(customerId) && isValidCustomer(incoming());
+        allow delete: if isSignedIn();
+
+        // Customer Ledger Transactions
+        match /ledger/{ledgerId} {
+          allow get, list: if true;
+          allow create, update: if isValidId(ledgerId) && isValidLedgerEntry(incoming());
+          allow delete: if isSignedIn();
+        }
+      }
+
+      // Products & Inventory
+      match /products/{productId} {
+        allow get, list: if true;
+        allow create, update: if isValidId(productId) && isValidProduct(incoming());
+        allow delete: if isSignedIn();
+      }
+
+      // Staff Accounts & Permissions
+      match /staff/{staffId} {
+        allow get, list: if true;
+        allow create, update: if isValidId(staffId) && isValidStaff(incoming());
+        allow delete: if isSignedIn();
       }
     }
   }

@@ -16,10 +16,13 @@ import {
 import {
   initializeStoreCloudData,
   syncBillToCloud,
+  syncBillWithLedgerBatch,
   syncCustomerUdhaarToCloud,
   subscribeToBills,
   subscribeToCustomers,
   subscribeToProducts,
+  subscribeToSyncStatus,
+  CloudSyncStatus,
   DATA_CENTER_REGION,
 } from './services/firebase';
 
@@ -82,6 +85,7 @@ function QuickBillApp() {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [bills, setBills] = useState<Bill[]>(initialBills);
   const [showLangModal, setShowLangModal] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<CloudSyncStatus>('online_synced');
 
   // Cross-screen state communication
   const [voiceParsedCart, setVoiceParsedCart] = useState<BillItem[] | undefined>(undefined);
@@ -93,6 +97,10 @@ function QuickBillApp() {
   // Sync with India Cloud Firestore Datacenter (asia-south1)
   useEffect(() => {
     initializeStoreCloudData();
+
+    const unsubSync = subscribeToSyncStatus((st) => {
+      setSyncStatus(st);
+    });
 
     const unsubBills = subscribeToBills((cloudBills) => {
       if (cloudBills && cloudBills.length) {
@@ -113,6 +121,7 @@ function QuickBillApp() {
     });
 
     return () => {
+      unsubSync();
       unsubBills();
       unsubCustomers();
       unsubProducts();
@@ -133,26 +142,27 @@ function QuickBillApp() {
     setCurrentScreen('home_dashboard');
   };
 
-  // Business Action Handlers
+  // Business Action Handlers with Atomic Batch Persistence
   const handleSaveBill = (newBill: Bill) => {
     setBills((prev) => [newBill, ...prev]);
 
-    // Asynchronously sync bill to India cloud backend
-    syncBillToCloud(newBill);
-
-    // Update customer's udhaar balance if bill had credit component
-    if (newBill.paymentMode === 'UDHAAR' || newBill.paymentMode === 'SPLIT') {
+    // Atomic write to Firestore
+    if ((newBill.paymentMode === 'UDHAAR' || newBill.paymentMode === 'SPLIT') && newBill.customerId) {
       const udhaarAmt = newBill.udhaarAmount || newBill.grandTotal;
+      const targetCustomer = customers.find((c) => c.id === newBill.customerId);
+      const newBal = (targetCustomer?.totalUdhaar || 0) + udhaarAmt;
+
+      syncBillWithLedgerBatch(newBill, {
+        customerId: newBill.customerId,
+        newBalance: newBal,
+        debitAmount: udhaarAmt,
+      });
+
       setCustomers((prev) =>
-        prev.map((c) => {
-          if (c.id === newBill.customerId) {
-            const newBal = c.totalUdhaar + udhaarAmt;
-            syncCustomerUdhaarToCloud(c.id, newBal);
-            return { ...c, totalUdhaar: newBal };
-          }
-          return c;
-        })
+        prev.map((c) => (c.id === newBill.customerId ? { ...c, totalUdhaar: newBal } : c))
       );
+    } else {
+      syncBillToCloud(newBill);
     }
 
     // Deduct stock quantities from inventory
@@ -250,6 +260,32 @@ function QuickBillApp() {
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           <span className="font-bold text-on-surface tracking-wide">QuickBill AI Vyapar</span>
+          {/* Live Cloud Sync Pill */}
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              syncStatus === 'online_synced'
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                : syncStatus === 'syncing'
+                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                : 'bg-slate-200 text-slate-800 border border-slate-300'
+            }`}
+            title={`Firebase Datacenter: ${DATA_CENTER_REGION}`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                syncStatus === 'online_synced'
+                  ? 'bg-emerald-600'
+                  : syncStatus === 'syncing'
+                  ? 'bg-amber-600 animate-spin'
+                  : 'bg-slate-500'
+              }`}
+            />
+            {syncStatus === 'online_synced'
+              ? '🇮🇳 Mumbai Cloud Synced'
+              : syncStatus === 'syncing'
+              ? 'Syncing...'
+              : 'Offline (Saved Locally)'}
+          </span>
           <span className="hidden sm:inline text-on-surface-variant text-[10px]">
             • {merchant.shopName}
           </span>

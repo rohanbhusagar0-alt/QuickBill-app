@@ -19,6 +19,22 @@
       },
       "required": ["shopName", "phone", "country"]
     },
+    "Staff": {
+      "title": "Staff",
+      "description": "Store cashier or manager staff account for Role-Based Access Control",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["owner", "manager", "cashier"] },
+        "phone": { "type": "string" },
+        "pin": { "type": "string" },
+        "active": { "type": "boolean" },
+        "lastLogin": { "type": "string" }
+      },
+      "required": ["name", "role", "phone", "pin"]
+    },
     "Customer": {
       "title": "Customer",
       "description": "Store customer ledger record",
@@ -35,6 +51,22 @@
         "createdAt": { "type": "string" }
       },
       "required": ["name", "phone", "totalUdhaar"]
+    },
+    "LedgerEntry": {
+      "title": "LedgerEntry",
+      "description": "Atomic Udhaar debit or credit entry in customer ledger",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "date": { "type": "string" },
+        "type": { "type": "string", "enum": ["DEBIT", "CREDIT"] },
+        "amount": { "type": "number" },
+        "balanceAfter": { "type": "number" },
+        "billNo": { "type": "string" },
+        "note": { "type": "string" }
+      },
+      "required": ["customerId", "type", "amount", "balanceAfter"]
     },
     "Product": {
       "title": "Product",
@@ -81,9 +113,17 @@
       "schema": "Merchant",
       "description": "Merchant store profile and billing details"
     },
+    "/merchants/{merchantId}/staff/{staffId}": {
+      "schema": "Staff",
+      "description": "Store cashier or manager staff permissions"
+    },
     "/merchants/{merchantId}/customers/{customerId}": {
       "schema": "Customer",
       "description": "Customer ledger records for Udhaar and Khata book"
+    },
+    "/merchants/{merchantId}/customers/{customerId}/ledger/{ledgerId}": {
+      "schema": "LedgerEntry",
+      "description": "Atomic Udhaar transactions"
     },
     "/merchants/{merchantId}/products/{productId}": {
       "schema": "Product",

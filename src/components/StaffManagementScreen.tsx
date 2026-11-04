@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppScreen } from '../types';
+import { User } from 'firebase/auth';
+import { loginWithGoogle, logoutUser, subscribeToAuth } from '../services/firebase';
 import {
   ArrowLeft,
   Search,
@@ -153,6 +155,13 @@ export const StaffManagementScreen: React.FC<StaffManagementScreenProps> = ({ on
   const [staffList, setStaffList] = useState<StaffDetail[]>(initialStaffList);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    return subscribeToAuth((user) => {
+      setCurrentUser(user);
+    });
+  }, []);
 
   // Shift & Galla Tally State
   const [shift, setShift] = useState<ShiftSummary>({
@@ -428,6 +437,44 @@ export const StaffManagementScreen: React.FC<StaffManagementScreenProps> = ({ on
       {/* Main Screen Content */}
       <div className="max-w-2xl mx-auto w-full px-4 pt-3 space-y-3.5">
         
+        {/* Firebase Authentication & Staff Role Authorization */}
+        <div className="bg-emerald-950 text-white rounded-2xl p-4 shadow-sm border border-emerald-900">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-800 border border-emerald-700 flex items-center justify-center font-bold text-lg">
+                🔐
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-sm font-bold text-white">Firebase Google Auth & RBAC</h3>
+                  <span className="text-[10px] font-bold bg-emerald-800/80 text-emerald-200 border border-emerald-700 px-2 py-0.5 rounded-full">
+                    asia-south1 (Mumbai)
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-200/90 mt-0.5">
+                  {currentUser ? `Owner: ${currentUser.email || currentUser.displayName}` : 'Owner Account & Role Protection Active'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                if (currentUser) {
+                  await logoutUser();
+                  showToast('Signed out of Google account.');
+                } else {
+                  const u = await loginWithGoogle();
+                  if (u) {
+                    showToast(`Signed in as ${u.displayName || u.email}!`);
+                  }
+                }
+              }}
+              className="px-3 py-1.5 bg-white hover:bg-emerald-50 text-emerald-950 font-bold rounded-xl text-xs shrink-0 cursor-pointer shadow-xs transition-colors"
+            >
+              {currentUser ? 'Sign Out' : 'Sign In with Google'}
+            </button>
+          </div>
+        </div>
+
         {/* 1. Dukaan Suraksha PIN Lock Card */}
         <div className="bg-white rounded-2xl p-4 shadow-xs border border-slate-100">
           <div className="flex items-start justify-between">
