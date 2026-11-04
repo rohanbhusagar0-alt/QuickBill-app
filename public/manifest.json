@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "QuickBill - Smart Vyapar, Billing & Khata AI",
+  "short_name": "QuickBill",
+  "description": "Smart AI Voice Billing, WhatsApp Invoices, Khata & Udhaar Book, Inventory & Expiry Alerts, and GST Accounting for Indian Kiranas & Retail Merchants.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#047857",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "finance", "productivity", "utilities"]
+}

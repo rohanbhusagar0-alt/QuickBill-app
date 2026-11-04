@@ -1,0 +1,6 @@
+{
+  "name": "QuickBill - Smart Vyapar, Billing & Khata AI",
+  "description": "Smart AI Voice Billing, WhatsApp Invoices, Khata & Udhaar Book, Inventory & Expiry Alerts, and GST Accounting for Indian Kirana & Retail Merchants.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

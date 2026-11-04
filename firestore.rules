@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Health check test connection path
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // Merchant profile and all store sub-collections (customers, products, bills, expenses)
+    match /merchants/{merchantId} {
+      allow read, write: if true;
+
+      match /{allSubcollections=**} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

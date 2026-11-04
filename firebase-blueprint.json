@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "Merchant": {
+      "title": "Merchant",
+      "description": "Retail store merchant profile and business configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Merchant ID or Auth UID" },
+        "shopName": { "type": "string", "description": "Shop trading name" },
+        "ownerName": { "type": "string", "description": "Merchant owner full name" },
+        "phone": { "type": "string", "description": "10-digit Indian mobile number" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "gstin": { "type": "string", "description": "15-character GSTIN identifier" },
+        "address": { "type": "string", "description": "Shop physical address with PIN code" },
+        "upiId": { "type": "string", "description": "Default settlement UPI ID" },
+        "preferredLanguage": { "type": "string", "description": "Selected language code" },
+        "country": { "type": "string", "description": "Country code (IN)" },
+        "region": { "type": "string", "description": "Data center region: asia-south1" }
+      },
+      "required": ["shopName", "phone", "country"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Store customer ledger record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "totalUdhaar": { "type": "number" },
+        "address": { "type": "string" },
+        "trustScore": { "type": "number" },
+        "loyaltyPoints": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "phone", "totalUdhaar"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory SKU and Kirana item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "mrp": { "type": "number" },
+        "stock": { "type": "number" },
+        "unit": { "type": "string" },
+        "category": { "type": "string" },
+        "barcode": { "type": "string" },
+        "expiryDate": { "type": "string" },
+        "lowStockThreshold": { "type": "number" },
+        "onlineAvailable": { "type": "boolean" }
+      },
+      "required": ["name", "price", "stock", "unit"]
+    },
+    "Bill": {
+      "title": "Bill",
+      "description": "Sales invoice generated at POS",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "invoiceNumber": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "grandTotal": { "type": "number" },
+        "subtotal": { "type": "number" },
+        "discount": { "type": "number" },
+        "paymentMode": { "type": "string" },
+        "status": { "type": "string" },
+        "date": { "type": "string" }
+      },
+      "required": ["invoiceNumber", "grandTotal", "paymentMode", "status"]
+    }
+  },
+  "firestore": {
+    "/merchants/{merchantId}": {
+      "schema": "Merchant",
+      "description": "Merchant store profile and billing details"
+    },
+    "/merchants/{merchantId}/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer ledger records for Udhaar and Khata book"
+    },
+    "/merchants/{merchantId}/products/{productId}": {
+      "schema": "Product",
+      "description": "Inventory catalog and stock levels"
+    },
+    "/merchants/{merchantId}/bills/{billId}": {
+      "schema": "Bill",
+      "description": "Sales invoices and receipts"
+    }
+  }
+}

@@ -1,0 +1,1194 @@
+[
+  {
+    "key": "change_language_title",
+    "fallback": "Change App Language"
+  },
+  {
+    "key": "quick_screen_nav",
+    "fallback": "क्विक स्क्रीन नेविगेशन (Select screen directly):"
+  },
+  {
+    "key": "feature_barcode",
+    "fallback": "बारकोड स्कैनर & प्राइस टैग"
+  },
+  {
+    "key": "feature_barcode_sub",
+    "fallback": "कैमरा स्कैनिंग और स्टिकर बारकोड जनरेटर"
+  },
+  {
+    "key": "price_tag",
+    "fallback": "प्राइस टैग"
+  },
+  {
+    "key": "align_barcode_box",
+    "fallback": "बारकोड को बॉक्स में लाएं"
+  },
+  {
+    "key": "quick_test_barcode",
+    "fallback": "क्विक टेस्ट बारकोड"
+  },
+  {
+    "key": "scan_success_match",
+    "fallback": "स्कैन सफल • मैच मिला"
+  },
+  {
+    "key": "selling_rate",
+    "fallback": "बिक्री मूल्य"
+  },
+  {
+    "key": "select_product_label",
+    "fallback": "उत्पाद चुनें"
+  },
+  {
+    "key": "sticker_preview",
+    "fallback": "स्टिकर प्रिव्यू"
+  },
+  {
+    "key": "stickers_count",
+    "fallback": "स्टिकर संख्या"
+  },
+  {
+    "key": "print_barcode_stickers",
+    "fallback": "बारकोड स्टिकर प्रिंट करें"
+  },
+  {
+    "key": "back_to_dashboard",
+    "fallback": "डैशबोर्ड पर वापस जाएं"
+  },
+  {
+    "key": "gave_credit",
+    "fallback": "उधारी सामान दिया"
+  },
+  {
+    "key": "got_payment",
+    "fallback": "भुगतान प्राप्त हुआ"
+  },
+  {
+    "key": "total_due",
+    "fallback": "कुल बकाया राशि"
+  },
+  {
+    "key": "you_will_get",
+    "fallback": "मैंने लेना है"
+  },
+  {
+    "key": "udhaar_recovery",
+    "fallback": "AI तकादा भेजें"
+  },
+  {
+    "key": "customer_statement",
+    "fallback": "खाता लेन-देन इतिहास"
+  },
+  {
+    "key": "entries_count",
+    "fallback": "एंट्री"
+  },
+  {
+    "key": "amount",
+    "fallback": "राशि"
+  },
+  {
+    "key": "item_name",
+    "fallback": "विवरण / नोट्स"
+  },
+  {
+    "key": "feature_online_store_sub",
+    "fallback": "अपनी दुकान का ऑनलाइन कैटलॉग व्हाट्सएप पर शेयर करें"
+  },
+  {
+    "key": "your_store_online_link",
+    "fallback": "आपकी दुकान की ऑनलाइन लिंक"
+  },
+  {
+    "key": "copied",
+    "fallback": "कॉपी हो गया"
+  },
+  {
+    "key": "copy_link",
+    "fallback": "लिंक कॉपी करें"
+  },
+  {
+    "key": "share",
+    "fallback": "शेयर करें"
+  },
+  {
+    "key": "customer_view_simulation",
+    "fallback": "ग्राहक को ऐसा दिखेगा"
+  },
+  {
+    "key": "store_open",
+    "fallback": "दुकान खुली है"
+  },
+  {
+    "key": "items_in_cart",
+    "fallback": "सामान कार्ट में है"
+  },
+  {
+    "key": "order_on_whatsapp",
+    "fallback": "व्हाट्सएप पर ऑर्डर करें"
+  },
+  {
+    "key": "expiry_clearance_flash_sale",
+    "fallback": "एक्सपायरी क्लियरेंस फ्लैश सेल"
+  },
+  {
+    "key": "expiry_clearance_desc",
+    "fallback": "सामान खराब होने से पहले डिस्काउंट सेल पर बेचें"
+  },
+  {
+    "key": "select_clearance_item",
+    "fallback": "सेल का प्रोडक्ट चुनें"
+  },
+  {
+    "key": "stock",
+    "fallback": "स्टॉक"
+  },
+  {
+    "key": "select_discount_pct",
+    "fallback": "डिस्काउंट प्रतिशत"
+  },
+  {
+    "key": "regular_selling_rate",
+    "fallback": "सामान्य बिक्री"
+  },
+  {
+    "key": "offer_rate",
+    "fallback": "ऑफर रेट"
+  },
+  {
+    "key": "savings",
+    "fallback": "बचत"
+  },
+  {
+    "key": "target_audience",
+    "fallback": "ऑफर किसे भेजना है"
+  },
+  {
+    "key": "all_customers",
+    "fallback": "सभी ग्राहक"
+  },
+  {
+    "key": "vip_regular_customers",
+    "fallback": "नियमित ग्राहक"
+  },
+  {
+    "key": "nearby_societies",
+    "fallback": "पास की सोसायटियां"
+  },
+  {
+    "key": "whatsapp_broadcast_msg",
+    "fallback": "व्हाट्सएप ब्रॉडकास्ट संदेश"
+  },
+  {
+    "key": "broadcast_sale_whatsapp",
+    "fallback": "व्हाट्सएप पर सेल ब्रॉडकास्ट करें"
+  },
+  {
+    "key": "superpower_1",
+    "fallback": "Superpower 1: AI Voice POS"
+  },
+  {
+    "key": "superpower_1_title",
+    "fallback": "बोलकर पर्ची बनाएं"
+  },
+  {
+    "key": "superpower_1_subtitle",
+    "fallback": "हाथ से टाइप करने का झंझट खत्म, सिर्फ माइक दबाकर बोलें"
+  },
+  {
+    "key": "play_audio_demo",
+    "fallback": "📢 बोलकर टेस्ट करें (Play Audio)"
+  },
+  {
+    "key": "voice_bullet_1",
+    "fallback": "हिंदी, इंग्लिश और हिंग्लिश तीनों भाषाएं समझता है"
+  },
+  {
+    "key": "voice_bullet_2",
+    "fallback": "मात्रा (kg, g, pkt, ltr) खुद पहचानकर रेट लगाता है"
+  },
+  {
+    "key": "voice_bullet_3",
+    "fallback": "दुकान पर भीड़ होने पर 5 गुना तेजी से बिलिंग"
+  },
+  {
+    "key": "superpower_2",
+    "fallback": "Superpower 2: Digital WhatsApp Bill"
+  },
+  {
+    "key": "superpower_2_title",
+    "fallback": "1-क्लिक व्हाट्सएप बिल & UPI"
+  },
+  {
+    "key": "superpower_2_subtitle",
+    "fallback": "कागज़ की पर्ची छोड़ें, सीधे ग्राहक के फोन पर डिजिटल बिल भेजें"
+  },
+  {
+    "key": "demo_whatsapp_bill_prompt",
+    "fallback": "व्हाट्सएप पर दुकान के नाम और UPI QR कोड के साथ प्रोफेशनल बिल"
+  },
+  {
+    "key": "preview_whatsapp_bill",
+    "fallback": "📱 डेमो बिल देखें (Preview WhatsApp Bill)"
+  },
+  {
+    "key": "whatsapp_bullet_1",
+    "fallback": "कागजी रोल और थर्मल इंक के खर्च में भारी बचत"
+  },
+  {
+    "key": "whatsapp_bullet_2",
+    "fallback": "बिल पर ग्राहक का नाम, आइटम लिस्ट और पेमेंट QR कोड"
+  },
+  {
+    "key": "whatsapp_bullet_3",
+    "fallback": "ग्राहक कभी भी अपना पुराना बिल दोबारा देख सकता है"
+  },
+  {
+    "key": "superpower_3",
+    "fallback": "Superpower 3: Smart AI Khata"
+  },
+  {
+    "key": "superpower_3_title",
+    "fallback": "उधारी वसूली AI रिमाइंडर"
+  },
+  {
+    "key": "superpower_3_subtitle",
+    "fallback": "उधारी नहीं डूबेगी! ऑटोमैटिक विनम्र व्हाट्सएप तकादा संदेश"
+  },
+  {
+    "key": "open_khata_demo",
+    "fallback": "📒 खाता बही देखें (Open Khata)"
+  },
+  {
+    "key": "khata_bullet_1",
+    "fallback": "मैंने लेना है (हरा) और मैंने देना है (लाल) का पक्का हिसाब"
+  },
+  {
+    "key": "khata_bullet_2",
+    "fallback": "भुगतान वादा तारीख (Promise Date) पर ऑटो रिमाइंडर"
+  },
+  {
+    "key": "khata_bullet_3",
+    "fallback": "रिश्ते खराब किए बिना 3 गुना तेज उधारी वसूली"
+  },
+  {
+    "key": "superpower_4",
+    "fallback": "Superpower 4: Zero Loss Inventory"
+  },
+  {
+    "key": "superpower_4_title",
+    "fallback": "एक्सपायरी अलर्ट & फ्लैश सेल"
+  },
+  {
+    "key": "superpower_4_subtitle",
+    "fallback": "सामान खराब होने से पहले ही ग्राहकों को डिस्काउंट ऑफर भेजें"
+  },
+  {
+    "key": "open_expiry_demo",
+    "fallback": "🏷️ क्लियरेंस सेल बनाएं (Open Expiry Alert)"
+  },
+  {
+    "key": "expiry_bullet_1",
+    "fallback": "15 दिन और 30 दिन पहले एक्सपायरी की चेतावनी"
+  },
+  {
+    "key": "expiry_bullet_2",
+    "fallback": "1-क्लिक में डिस्काउंट लगाकर व्हाट्सएप ब्रॉडकास्ट"
+  },
+  {
+    "key": "expiry_bullet_3",
+    "fallback": "हर महीने ₹8,000 से ₹15,000 के नुकसान से बचाव"
+  },
+  {
+    "key": "skip",
+    "fallback": "Skip"
+  },
+  {
+    "key": "live_interactive_demo",
+    "fallback": "Live Interactive Demo"
+  },
+  {
+    "key": "next_feature",
+    "fallback": "अगला फीचर (Next)"
+  },
+  {
+    "key": "get_started",
+    "fallback": "शुरू करें (Get Started)"
+  },
+  {
+    "key": "open_dashboard_directly",
+    "fallback": "या सीधे होम डैशबोर्ड खोलें (Directly Open Dashboard) →"
+  },
+  {
+    "key": "today_sales",
+    "fallback": "दैनिक कैश मिलान और रोकड़ बही"
+  },
+  {
+    "key": "expected_cash",
+    "fallback": "अपेक्षित रोकड़"
+  },
+  {
+    "key": "cash_summary_formula",
+    "fallback": "ओपनिंग + कैश बिक्री - खर्चे"
+  },
+  {
+    "key": "counted_cash",
+    "fallback": "गल्ला गिनती"
+  },
+  {
+    "key": "exact_match",
+    "fallback": "बिल्कुल सही मिलान!"
+  },
+  {
+    "key": "extra_cash",
+    "fallback": "ज्यादा नकद"
+  },
+  {
+    "key": "short_cash",
+    "fallback": "कम नकद"
+  },
+  {
+    "key": "opening_cash",
+    "fallback": "सुबह का ओपनिंग कैश"
+  },
+  {
+    "key": "expenses",
+    "fallback": "आज के कुल खर्चे"
+  },
+  {
+    "key": "denomination_counter",
+    "fallback": "नोटों की गिनती"
+  },
+  {
+    "key": "daily_expenses",
+    "fallback": "दुकान के दैनिक खर्चे"
+  },
+  {
+    "key": "expense_name",
+    "fallback": "खर्चे का नाम"
+  },
+  {
+    "key": "add",
+    "fallback": "जोड़ें"
+  },
+  {
+    "key": "galla_locked",
+    "fallback": "दिन का गल्ला हिसाब लॉक हो चुका है"
+  },
+  {
+    "key": "lock_galla",
+    "fallback": "दिन का गल्ला हिसाब फाइनल व लॉक करें"
+  },
+  {
+    "key": "godown_transfer_title",
+    "fallback": "गोदाम ↔ दुकान ट्रांसफर"
+  },
+  {
+    "key": "godown_transfer_subtitle",
+    "fallback": "गोदाम से दुकान पर माल शिफ्टिंग और ट्रांसफर चालान"
+  },
+  {
+    "key": "godown",
+    "fallback": "गोदाम"
+  },
+  {
+    "key": "source_from",
+    "fallback": "स्रोत (From)"
+  },
+  {
+    "key": "counter_shop",
+    "fallback": "काउंटर दुकान (Shop)"
+  },
+  {
+    "key": "dest_to",
+    "fallback": "गंतव्य (To)"
+  },
+  {
+    "key": "select_item_transfer",
+    "fallback": "सामान चुनें (Select Item)"
+  },
+  {
+    "key": "counter_label",
+    "fallback": "काउंटर"
+  },
+  {
+    "key": "available_in_godown",
+    "fallback": "गोदाम में उपलब्ध"
+  },
+  {
+    "key": "in_counter_shop",
+    "fallback": "काउंटर दुकान में"
+  },
+  {
+    "key": "transfer_quantity",
+    "fallback": "ट्रांसफर मात्रा (Quantity to Shift)"
+  },
+  {
+    "key": "transfer_success_msg",
+    "fallback": "सफलतापूर्वक ट्रांसफर चालान बन गया!"
+  },
+  {
+    "key": "issue_transfer_challan",
+    "fallback": "स्टॉक ट्रांसफर चालान जारी करें"
+  },
+  {
+    "key": "expiry_tracker",
+    "fallback": "स्मार्ट एक्सपायरी अलर्ट्स"
+  },
+  {
+    "key": "feature_inventory_sub",
+    "fallback": "खराब होने से पहले सामान पर डिस्काउंट ऑफर लगाएं"
+  },
+  {
+    "key": "potential_loss_risk",
+    "fallback": "संभावित एक्सपायरी नुकसान"
+  },
+  {
+    "key": "expiring_products_count",
+    "fallback": "प्रोडक्ट्स जल्द एक्सपायर हो रहे हैं"
+  },
+  {
+    "key": "apply_flash_sale",
+    "fallback": "फ्लैश सेल लगाएं"
+  },
+  {
+    "key": "all_expiring",
+    "fallback": "सभी एक्सपायरी"
+  },
+  {
+    "key": "in_15_days",
+    "fallback": "15 दिन में"
+  },
+  {
+    "key": "in_30_days",
+    "fallback": "30 दिन में"
+  },
+  {
+    "key": "purchase_rate",
+    "fallback": "खरीद"
+  },
+  {
+    "key": "expired",
+    "fallback": "एक्सपायर हो चुका"
+  },
+  {
+    "key": "days_left",
+    "fallback": "दिन शेष"
+  },
+  {
+    "key": "date",
+    "fallback": "तारीख"
+  },
+  {
+    "key": "risk",
+    "fallback": "जोखिम"
+  },
+  {
+    "key": "sale_offer",
+    "fallback": "सेल ऑफर"
+  },
+  {
+    "key": "broadcast_clearance_whatsapp",
+    "fallback": "व्हाट्सएप पर क्लीयरेंस सेल ब्रॉडकास्ट करें"
+  },
+  {
+    "key": "inventory_stock",
+    "fallback": "स्मार्ट इन्वेंटरी & स्टॉक"
+  },
+  {
+    "key": "low_stock_alert",
+    "fallback": "स्टॉक काउंट और रीऑर्डर"
+  },
+  {
+    "key": "expiry_alerts",
+    "fallback": "एक्सपायरी अलर्ट्स"
+  },
+  {
+    "key": "supplier_khata",
+    "fallback": "सप्लायर ऑर्डर"
+  },
+  {
+    "key": "all",
+    "fallback": "सभी"
+  },
+  {
+    "key": "low_stock_badge",
+    "fallback": "कम स्टॉक"
+  },
+  {
+    "key": "quantity",
+    "fallback": "स्टॉक संख्या"
+  },
+  {
+    "key": "inward_scanner_title",
+    "fallback": "थोक बिल / पर्ची AI स्कैनर"
+  },
+  {
+    "key": "inward_scanner_subtitle",
+    "fallback": "डिस्ट्रीब्यूटर बिल या कच्ची पर्ची से स्टॉक इनवर्ड"
+  },
+  {
+    "key": "tax_invoice",
+    "fallback": "टैक्स इनवॉइस"
+  },
+  {
+    "key": "kachhi_parchi",
+    "fallback": "कच्ची पर्ची"
+  },
+  {
+    "key": "take_distributor_bill_photo",
+    "fallback": "डिस्ट्रीब्यूटर बिल की फोटो खींचें"
+  },
+  {
+    "key": "inward_scanner_help",
+    "fallback": "AI अपने आप सप्लायर का नाम, सामान की लिस्ट, होलसेल खरीद भाव और मार्जिन निकाल लेगा।"
+  },
+  {
+    "key": "ai_reading_parchi",
+    "fallback": "AI पर्ची पढ़ रहा है..."
+  },
+  {
+    "key": "take_photo_scan",
+    "fallback": "फोटो खींचें / स्कैन करें"
+  },
+  {
+    "key": "upload_from_gallery",
+    "fallback": "गैलरी से अपलोड"
+  },
+  {
+    "key": "bill",
+    "fallback": "बिल"
+  },
+  {
+    "key": "total_purchase_amount",
+    "fallback": "कुल खरीद राशि"
+  },
+  {
+    "key": "inward_qty",
+    "fallback": "इनवर्ड मात्रा"
+  },
+  {
+    "key": "margin",
+    "fallback": "मार्जिन"
+  },
+  {
+    "key": "selling",
+    "fallback": "बिक्री"
+  },
+  {
+    "key": "add_stock_notice",
+    "fallback": ""
+  },
+  {
+    "key": "stock_updated_success",
+    "fallback": "स्टॉक सफलतापूर्वक अपडेट हो गया!"
+  },
+  {
+    "key": "add_stock_to_inventory",
+    "fallback": "दुकान इन्वेंटरी में स्टॉक जोड़ें"
+  },
+  {
+    "key": "T",
+    "fallback": ""
+  },
+  {
+    "key": "select_language_title",
+    "fallback": "अपनी भाषा चुनें"
+  },
+  {
+    "key": "supported_languages_subtitle",
+    "fallback": "12 भारतीय भाषाएं उपलब्ध हैं"
+  },
+  {
+    "key": "loyalty_rewards_title",
+    "fallback": "लॉयल्टी पॉइंट्स & कूपन"
+  },
+  {
+    "key": "loyalty_rewards_subtitle",
+    "fallback": "ग्राहकों को पॉइंट्स और डिस्काउंट कूपन भेजें"
+  },
+  {
+    "key": "loyalty_rule_title",
+    "fallback": "हर ₹100 की खरीदारी पर 1 पॉइंट"
+  },
+  {
+    "key": "loyalty_rule_desc",
+    "fallback": "1 पॉइंट = ₹1 कैश डिस्काउंट। ग्राहक अगली बार बिल में इसे रिडीम करवा सकते हैं।"
+  },
+  {
+    "key": "select_customer",
+    "fallback": "ग्राहक चुनें"
+  },
+  {
+    "key": "points_available",
+    "fallback": "पॉइंट्स उपलब्ध"
+  },
+  {
+    "key": "available_loyalty_points",
+    "fallback": "उपलब्ध लॉयल्टी पॉइंट्स"
+  },
+  {
+    "key": "send_whatsapp_coupon",
+    "fallback": "व्हाट्सएप कूपन भेजें"
+  },
+  {
+    "key": "coupon_sent_whatsapp",
+    "fallback": "कूपन व्हाट्सएप पर भेजा गया!"
+  },
+  {
+    "key": "send_coupon_on_whatsapp",
+    "fallback": "व्हाट्सएप पर कूपन भेजें"
+  },
+  {
+    "key": "live_mandi_rates_title",
+    "fallback": "दैनिक मंडी भाव"
+  },
+  {
+    "key": "live_mandi_rates_subtitle",
+    "fallback": "दाल, तेल, अनाज के आज के थोक थोक खरीद भाव"
+  },
+  {
+    "key": "mandi_location",
+    "fallback": "मंडी लोकेशन"
+  },
+  {
+    "key": "kirana_retail_avg",
+    "fallback": "किराना रीटेल औसत"
+  },
+  {
+    "key": "savings_opportunity",
+    "fallback": "बचत अवसर"
+  },
+  {
+    "key": "ai_mandi_bulk_advice_title",
+    "fallback": "AI थोक खरीद सलाह"
+  },
+  {
+    "key": "mandi_advice_content",
+    "fallback": "चना दाल और सरसों तेल के भाव इस हफ्ते मंडी में गिरे हैं। आगामी त्योहारी सीजन को देखते हुए 5-10 क्विंटल का थोक ऑर्डर बुक करने पर लगभग ₹8,500 की अतिरिक्त बचत हो सकती है।"
+  },
+  {
+    "key": "send_bulk_po_supplier",
+    "fallback": "सप्लायर को थोक PO भेजें"
+  },
+  {
+    "key": "valid_mobile_error",
+    "fallback": "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें"
+  },
+  {
+    "key": "merchant_login_title",
+    "fallback": "व्यापारी लॉगिन"
+  },
+  {
+    "key": "merchant_login_subtitle",
+    "fallback": "QuickBill स्मार्ट व्यापार में आपका स्वागत है"
+  },
+  {
+    "key": "verified_merchant_portal",
+    "fallback": "Verified Merchant Portal"
+  },
+  {
+    "key": "merchant_account_notice",
+    "fallback": "नया खाता बनाएं या पुराना खोलें"
+  },
+  {
+    "key": "otp_secure_login",
+    "fallback": "OTP द्वारा सुरक्षित एक-क्लिक लॉगिन"
+  },
+  {
+    "key": "mobile_number",
+    "fallback": "मोबाइल नंबर"
+  },
+  {
+    "key": "ten_digit_placeholder",
+    "fallback": "10 अंकों का नंबर"
+  },
+  {
+    "key": "shop_name_label",
+    "fallback": "दुकान या व्यापार का नाम"
+  },
+  {
+    "key": "shop_name_placeholder",
+    "fallback": "उदा. श्री गणेश किराना स्टोर"
+  },
+  {
+    "key": "business_category",
+    "fallback": "दुकान की श्रेणी"
+  },
+  {
+    "key": "no_card_needed",
+    "fallback": "कोई कागजात या क्रेडिट कार्ड की जरूरत नहीं"
+  },
+  {
+    "key": "free_lifetime_billing",
+    "fallback": "जीवन भर फ्री बेसिक बिलिंग & खाता बही"
+  },
+  {
+    "key": "get_otp",
+    "fallback": "OTP भेजें"
+  },
+  {
+    "key": "terms_accept_notice",
+    "fallback": "लॉगिन करके आप QuickBill के नियम और गोपनीयता नीति स्वीकार करते हैं।"
+  },
+  {
+    "key": "otp_verification_title",
+    "fallback": "OTP सत्यापन"
+  },
+  {
+    "key": "otp_verification_subtitle",
+    "fallback": "सुरक्षित 4-अंकीय कोड दर्ज करें"
+  },
+  {
+    "key": "code_sent_to_number",
+    "fallback": "कोड इस नंबर पर भेजा गया है"
+  },
+  {
+    "key": "demo_otp_hint",
+    "fallback": "टेस्ट के लिए डेमो OTP ऑटो-फिल है"
+  },
+  {
+    "key": "resend_otp_in",
+    "fallback": "दोबारा OTP भेजें"
+  },
+  {
+    "key": "seconds",
+    "fallback": "सेकंड"
+  },
+  {
+    "key": "resend_otp",
+    "fallback": "OTP दोबारा भेजें"
+  },
+  {
+    "key": "verified_success",
+    "fallback": "सत्यापित हुआ!"
+  },
+  {
+    "key": "verify_and_proceed",
+    "fallback": "सत्यापित करें और आगे बढ़ें"
+  },
+  {
+    "key": "ssl_encrypted_login",
+    "fallback": "256-Bit SSL एन्क्रिप्टेड सिक्योर व्यापार लॉगिन"
+  },
+  {
+    "key": "quickbill_pro_title",
+    "fallback": "क्विकबिल प्रो"
+  },
+  {
+    "key": "quickbill_pro_subtitle",
+    "fallback": "दुकान की तरक्की के लिए सभी प्रीमियम AI टूल्स"
+  },
+  {
+    "key": "monthly_plan",
+    "fallback": "मासिक (₹299/माह)"
+  },
+  {
+    "key": "yearly_plan",
+    "fallback": "वार्षिक (₹199/माह)"
+  },
+  {
+    "key": "discount_33_off",
+    "fallback": "33% छूट"
+  },
+  {
+    "key": "pro_subscription_heading",
+    "fallback": "क्विकबिल प्रो सदस्यता"
+  },
+  {
+    "key": "per_year_gst",
+    "fallback": "प्रति वर्ष (GST सहित)"
+  },
+  {
+    "key": "per_month",
+    "fallback": "प्रति माह"
+  },
+  {
+    "key": "feature_voice_billing",
+    "fallback": "अनलिमिटेड AI बोलकर बिलिंग (Unlimited Voice Billing)"
+  },
+  {
+    "key": "feature_udhaar_recovery",
+    "fallback": "व्हाट्सएप पर ऑटोमैटिक उधारी तकादा (3x Fast Recovery)"
+  },
+  {
+    "key": "feature_inward_ocr",
+    "fallback": "थोक पर्ची व डिस्ट्रीब्यूटर इनवॉइस AI ओसीआर स्कैनर"
+  },
+  {
+    "key": "feature_digital_store",
+    "fallback": "फ्री ऑनलाइन डिजिटल दुकान वेबसाइट (Zero Commission)"
+  },
+  {
+    "key": "feature_thermal_print",
+    "fallback": "थर्मल ब्लूटूथ 58mm & 80mm कस्टम प्रिंटिंग"
+  },
+  {
+    "key": "feature_mandi_rates",
+    "fallback": "दैनिक लाइव मंडी भाव व थोक खरीद सलाह"
+  },
+  {
+    "key": "feature_gst_reports",
+    "fallback": "GSTR-1 और 3B CA-रेडी एक्सेल व PDF रिपोर्ट्स"
+  },
+  {
+    "key": "feature_stock_transfer",
+    "fallback": "गोदाम ↔ दुकान मल्टी-लोकेशन स्टॉक ट्रांसफर"
+  },
+  {
+    "key": "feature_cloud_backup",
+    "fallback": "क्लाउड ऑटो-बैकअप (डेटा कभी नष्ट नहीं होगा)"
+  },
+  {
+    "key": "congrats_pro_active",
+    "fallback": "बधाई हो! आपकी QuickBill Pro सदस्यता सक्रिय है।"
+  },
+  {
+    "key": "pro_active_status",
+    "fallback": "सक्रिय है (Pro Active)"
+  },
+  {
+    "key": "start_free_trial",
+    "fallback": "14 दिन का मुफ्त ट्रायल शुरू करें"
+  },
+  {
+    "key": "exporting_excel_alert",
+    "fallback": "GSTR-1 और सेल्स रिपोर्ट एक्सेल (.xlsx) डाउनलोड हो रही है..."
+  },
+  {
+    "key": "reports_gst_title",
+    "fallback": "रिपोर्ट्स & GST टैक्स फाइलिंग"
+  },
+  {
+    "key": "reports_gst_subtitle",
+    "fallback": "1-क्लिक में CA के लिए सेल्स और टैक्स रिपोर्ट"
+  },
+  {
+    "key": "export_excel",
+    "fallback": "एक्सेल एक्सपोर्ट"
+  },
+  {
+    "key": "total_sales",
+    "fallback": "कुल बिक्री"
+  },
+  {
+    "key": "estimated_profit",
+    "fallback": "अनुमानित मुनाफा"
+  },
+  {
+    "key": "gst_collected_title",
+    "fallback": "GST संकलन"
+  },
+  {
+    "key": "gstr1_ready",
+    "fallback": "GSTR-1 तैयार"
+  },
+  {
+    "key": "gst_slab_report",
+    "fallback": "GST स्लैब रिपोर्ट"
+  },
+  {
+    "key": "payment_modes",
+    "fallback": "भुगतान माध्यम"
+  },
+  {
+    "key": "gstr1_slab_summary",
+    "fallback": "GSTR-1 स्लैबवार विवरण"
+  },
+  {
+    "key": "month_sept_2026",
+    "fallback": "महीना: सितम्बर 2026"
+  },
+  {
+    "key": "gst_0_exempt",
+    "fallback": "0% छूट प्राप्त सामान (Exempted Foodgrains)"
+  },
+  {
+    "key": "gst_0_desc",
+    "fallback": "खुला आटा, दाल, चावल, ताजे फल"
+  },
+  {
+    "key": "gst_5_bracket",
+    "fallback": "5% GST (ब्रैंडेड खाद्यान्न, तेल, चीनी)"
+  },
+  {
+    "key": "gst_12_bracket",
+    "fallback": "12% GST (मक्खन, घी, पैकेज्ड फूड)"
+  },
+  {
+    "key": "gst_18_bracket",
+    "fallback": "18% GST (साबुन, शैम्पू, टूथपेस्ट, डिटर्जेंट)"
+  },
+  {
+    "key": "payment_dist_title",
+    "fallback": "भुगतान माध्यम वितरण"
+  },
+  {
+    "key": "cash_label",
+    "fallback": "नकद"
+  },
+  {
+    "key": "udhaar_khata",
+    "fallback": "उधारी खाता"
+  },
+  {
+    "key": "customer",
+    "fallback": "ग्राहक"
+  },
+  {
+    "key": "soundbox_voice",
+    "fallback": "स्मार्ट साउंडबॉक्स"
+  },
+  {
+    "key": "last_payment_received",
+    "fallback": "प्राप्त राशि (Last Payment Received)"
+  },
+  {
+    "key": "replay_sound",
+    "fallback": "आवाज़ में दोबारा सुनें"
+  },
+  {
+    "key": "test_payment",
+    "fallback": "पेमेंट टेस्ट बटन"
+  },
+  {
+    "key": "click_to_hear",
+    "fallback": "आवाज़ सुनने के लिए दबाएं"
+  },
+  {
+    "key": "staff_management_title",
+    "fallback": "स्टाफ & PIN सुरक्षा"
+  },
+  {
+    "key": "staff_management_subtitle",
+    "fallback": "कैशियर और लड़कों के लिए PIN और परमिशन कंट्रोल"
+  },
+  {
+    "key": "privacy_security",
+    "fallback": "गोपनीयता सुरक्षा"
+  },
+  {
+    "key": "staff_security_notice",
+    "fallback": "काउंटर कैशियर सिर्फ बिल बना सकता है। उसे आपकी थोक खरीद रेट और कुल मुनाफा नहीं दिखाई देगा।"
+  },
+  {
+    "key": "phone",
+    "fallback": "फ़ोन"
+  },
+  {
+    "key": "full_access",
+    "fallback": "Full Access"
+  },
+  {
+    "key": "pos_only",
+    "fallback": "POS Only"
+  },
+  {
+    "key": "add_staff_member",
+    "fallback": "+ नया स्टाफ जोड़ें"
+  },
+  {
+    "key": "add_new_staff_title",
+    "fallback": "नया स्टाफ सदस्य"
+  },
+  {
+    "key": "name",
+    "fallback": "नाम"
+  },
+  {
+    "key": "name_placeholder_eg",
+    "fallback": "उदा. राहुल शर्मा"
+  },
+  {
+    "key": "role_label",
+    "fallback": "रोल (Role)"
+  },
+  {
+    "key": "counter_cashier",
+    "fallback": "काउंटर कैशियर (POS Billing Only)"
+  },
+  {
+    "key": "delivery_boy",
+    "fallback": "डिलीवरी बॉय (Delivery Boy)"
+  },
+  {
+    "key": "store_manager",
+    "fallback": "स्टोर मैनेजर (Store Manager)"
+  },
+  {
+    "key": "login_pin_label",
+    "fallback": "लॉगिन PIN (4-अंक)"
+  },
+  {
+    "key": "feature_supplier_sub",
+    "fallback": "थोक व्यापारियों का बकाया हिसाब"
+  },
+  {
+    "key": "total_payable_suppliers",
+    "fallback": "सप्लायरों को कुल देना है"
+  },
+  {
+    "key": "distributors_pending",
+    "fallback": "डिस्ट्रीब्यूटर्स का बकाया"
+  },
+  {
+    "key": "inward_scanner",
+    "fallback": "कच्ची पर्ची / बिल स्कैन"
+  },
+  {
+    "key": "suppliers_list",
+    "fallback": "थोक सप्लायर सूची"
+  },
+  {
+    "key": "payable_amount",
+    "fallback": "देय राशि"
+  },
+  {
+    "key": "send_new_po",
+    "fallback": "को नया PO भेजें"
+  },
+  {
+    "key": "items_and_qty_placeholder",
+    "fallback": "सामान और मात्रा लिखें..."
+  },
+  {
+    "key": "order_sent_whatsapp",
+    "fallback": "ऑर्डर व्हाट्सएप पर भेजा गया!"
+  },
+  {
+    "key": "send_po_whatsapp",
+    "fallback": "सप्लायर को व्हाट्सएप पर PO भेजें"
+  },
+  {
+    "key": "thermal_designer_title",
+    "fallback": "थर्मल प्रिंटर & रसीद डिज़ाइनर"
+  },
+  {
+    "key": "thermal_designer_subtitle",
+    "fallback": "2-इंच (58mm) / 3-इंच (80mm) थर्मल पर्ची कस्टमाइज़ करें"
+  },
+  {
+    "key": "thermal_roll_width",
+    "fallback": "प्रिंटर पेपर साइज (Thermal Roll Width)"
+  },
+  {
+    "key": "two_inch_roll",
+    "fallback": "2-इंच (58mm)"
+  },
+  {
+    "key": "portable_bt_printer",
+    "fallback": "पोर्टेबल ब्लूटूथ प्रिंटर"
+  },
+  {
+    "key": "three_inch_roll",
+    "fallback": "3-इंच (80mm)"
+  },
+  {
+    "key": "large_pos_printer",
+    "fallback": "बड़ा काउंटर POS प्रिंटर"
+  },
+  {
+    "key": "receipt_header",
+    "fallback": "दुकान का विवरण (Receipt Header)"
+  },
+  {
+    "key": "shop_name",
+    "fallback": "दुकान का नाम"
+  },
+  {
+    "key": "phone_number",
+    "fallback": "फ़ोन नंबर"
+  },
+  {
+    "key": "footer_note",
+    "fallback": "फूटर संदेश (धन्यवाद नोट)"
+  },
+  {
+    "key": "print_upi_qr",
+    "fallback": "UPI पेमेंट QR कोड प्रिंट करें"
+  },
+  {
+    "key": "print_gstin",
+    "fallback": "GSTIN नंबर प्रिंट करें"
+  },
+  {
+    "key": "settings_saved",
+    "fallback": "सेटिंग्स सेव हो गईं!"
+  },
+  {
+    "key": "save_settings",
+    "fallback": "सेटिंग्स सुरक्षित करें"
+  },
+  {
+    "key": "thermal_paper_preview",
+    "fallback": "थर्मल पेपर लाइव प्रिव्यू"
+  },
+  {
+    "key": "bill_no",
+    "fallback": "बिल #"
+  },
+  {
+    "key": "rate_qty",
+    "fallback": "दर x मात्रा"
+  },
+  {
+    "key": "rupees",
+    "fallback": "रुपये"
+  },
+  {
+    "key": "scan_upi_to_pay",
+    "fallback": "UPI द्वारा स्कैन करके भुगतान करें"
+  },
+  {
+    "key": "print_test_receipt",
+    "fallback": "टेस्ट पर्ची प्रिंट करें"
+  },
+  {
+    "key": "reminder_tone",
+    "fallback": "AI संदेश का लहज़ा चुनें"
+  },
+  {
+    "key": "tone_polite",
+    "fallback": "विनम्र"
+  },
+  {
+    "key": "tone_pro",
+    "fallback": "व्यापारिक"
+  },
+  {
+    "key": "tone_firm",
+    "fallback": "अंतिम सूचना"
+  },
+  {
+    "key": "preview_title",
+    "fallback": "व्हाट्सएप संदेश प्रिव्यू"
+  },
+  {
+    "key": "upi_link_included",
+    "fallback": "पेमेंट लिंक शामिल है"
+  },
+  {
+    "key": "promise_date",
+    "fallback": "भुगतान वादा तारीख"
+  },
+  {
+    "key": "2 किलो आशीर्वाद आटा, 1 फॉर्च्यून तेल और 3 पैकेट मैगी",
+    "fallback": ""
+  },
+  {
+    "key": "voice_sample_title",
+    "fallback": "पहचानी गई आवाज़"
+  },
+  {
+    "key": "listen_audio",
+    "fallback": "आवाज़ में सुनें"
+  },
+  {
+    "key": "voice_sample_click",
+    "fallback": "या इन किराना बोलचाल के उदाहरणों पर क्लिक करें"
+  },
+  {
+    "key": "-",
+    "fallback": ""
+  }
+]

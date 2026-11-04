@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="qbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#qbGrad)" />
+  
+  <!-- Receipt / POS shape -->
+  <rect x="116" y="86" width="280" height="340" rx="28" fill="#ffffff" />
+  
+  <!-- Header Bar in Receipt -->
+  <path d="M116 114 Q116 86 144 86 L368 86 Q396 86 396 114 L396 156 L116 156 Z" fill="url(#accentGrad)" />
+  
+  <!-- Rupee Symbol -->
+  <text x="256" y="270" font-family="Arial, sans-serif" font-size="110" font-weight="900" fill="#047857" text-anchor="middle">₹</text>
+  
+  <!-- Bill Lines -->
+  <rect x="166" y="305" width="180" height="14" rx="7" fill="#cbd5e1" />
+  <rect x="166" y="335" width="140" height="14" rx="7" fill="#cbd5e1" />
+  <rect x="166" y="365" width="180" height="18" rx="9" fill="#10b981" />
+
+  <!-- India Badge -->
+  <circle cx="396" cy="116" r="42" fill="#ffffff" stroke="#e2e8f0" stroke-width="6"/>
+  <text x="396" y="128" font-size="38" text-anchor="middle">🇮🇳</text>
+</svg>
