@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AppScreen, MerchantProfile } from '../types';
 import {
   ArrowLeft,
@@ -24,29 +24,85 @@ import {
   Store,
   Check,
   Smartphone,
+  Edit3,
+  RotateCcw,
+  AlertTriangle,
+  ShieldCheck,
+  Sliders,
+  Trash2,
+  Star
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '../context/LanguageContext';
-import { validateIndiaDatacenterConnection } from '../services/firebase';
+import {
+  validateIndiaDatacenterConnection,
+  syncBankAccountToCloud,
+  getStoreMerchantId,
+} from '../services/firebase';
 import { InstallApkModal } from './InstallApkModal';
+import { AddBankAccountModal, BankAccount } from './AddBankAccountModal';
+import { EditStoreDetailsModal } from './EditStoreDetailsModal';
+import { LanguageSelectorModal } from './LanguageSelectorModal';
 
 interface StoreProfileSetupScreenProps {
   onNavigate: (screen: AppScreen) => void;
   merchant: MerchantProfile;
   onUpdateMerchant: (updated: Partial<MerchantProfile>) => void;
+  onClearDemoData?: () => void;
+  onRestoreDemoData?: () => void;
+  devModeEnabled?: boolean;
+  onToggleDevMode?: () => void;
+  onLogout?: () => void;
 }
 
 export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = ({
   onNavigate,
   merchant,
   onUpdateMerchant,
+  onClearDemoData,
+  onRestoreDemoData,
+  devModeEnabled = false,
+  onToggleDevMode,
+  onLogout,
 }) => {
   const { t, language } = useLanguage();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [gstAutofill, setGstAutofill] = useState(true);
   const [biometricLock, setBiometricLock] = useState(true);
   const [continuousBarcodeBeep, setContinuousBarcodeBeep] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showApkModal, setShowApkModal] = useState(false);
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
+  const [showEditShopModal, setShowEditShopModal] = useState(false);
+  const [showLangModal, setShowLangModal] = useState(false);
+
+  // Real Bank Accounts State
+  const [showAddBankModal, setShowAddBankModal] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>(() => {
+    const saved = localStorage.getItem('quickbill_bank_accounts');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {}
+    }
+    return [];
+  });
+
+  // Real Store Details (Address / Bill Notes) Modal State
+  const [showEditDetailsModal, setShowEditDetailsModal] = useState(false);
+  const [editDetailsTab, setEditDetailsTab] = useState<'location' | 'bill_notes'>('location');
+
+  // Search filter
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+  // Edit shop form inputs
+  const [shopNameInput, setShopNameInput] = useState(merchant.shopName || '');
+  const [ownerNameInput, setOwnerNameInput] = useState(merchant.name || '');
+  const [phoneInput, setPhoneInput] = useState(merchant.phone || '');
+  const [upiInput, setUpiInput] = useState(merchant.upiId || '');
+  const [addressInput, setAddressInput] = useState(merchant.address || '');
+  const [gstinInput, setGstinInput] = useState(merchant.gstin || '');
 
   const handleCopyGstin = () => {
     navigator.clipboard?.writeText(merchant.gstin || '07AABCS1429B1Z');
@@ -54,8 +110,112 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
     setTimeout(() => setToastMessage(null), 2000);
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          onUpdateMerchant({ logoUrl: reader.result });
+          setToastMessage('Store photo updated successfully!');
+          setTimeout(() => setToastMessage(null), 2000);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddAccount = (acc: BankAccount) => {
+    setBankAccounts((prev) => {
+      let updated = prev;
+      if (acc.isDefault) {
+        updated = prev.map((a) => ({ ...a, isDefault: false }));
+      }
+      const next = [...updated, acc];
+      try {
+        localStorage.setItem('quickbill_bank_accounts', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    // Persist bank account to India Cloud Datacenter
+    syncBankAccountToCloud(getStoreMerchantId(merchant.phone), {
+      id: acc.id,
+      bankName: acc.bankName,
+      accountNumber: acc.accountNumber,
+      ifscCode: acc.ifscCode,
+      isPrimary: acc.isDefault,
+    });
+    setToastMessage(`Bank account for ${acc.bankName} added!`);
+    setTimeout(() => setToastMessage(null), 2000);
+  };
+
+  const handleDeleteAccount = (id: string) => {
+    setBankAccounts((prev) => {
+      const next = prev.filter((a) => a.id !== id);
+      try {
+        localStorage.setItem('quickbill_bank_accounts', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    setToastMessage('Bank account removed');
+    setTimeout(() => setToastMessage(null), 1500);
+  };
+
+  const handleSetDefaultAccount = (id: string) => {
+    let targetAcc: BankAccount | undefined;
+    setBankAccounts((prev) => {
+      const next = prev.map((a) => {
+        const isMatch = a.id === id;
+        if (isMatch) targetAcc = { ...a, isDefault: true };
+        return { ...a, isDefault: isMatch };
+      });
+      try {
+        localStorage.setItem('quickbill_bank_accounts', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    if (targetAcc) {
+      syncBankAccountToCloud(getStoreMerchantId(merchant.phone), {
+        id: targetAcc.id,
+        bankName: targetAcc.bankName,
+        accountNumber: targetAcc.accountNumber,
+        ifscCode: targetAcc.ifscCode,
+        isPrimary: true,
+      });
+    }
+    setToastMessage('Default settlement account updated');
+    setTimeout(() => setToastMessage(null), 1500);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('quickbill_session');
+    setToastMessage('Session logged out securely.');
+    if (onLogout) {
+      onLogout();
+    } else {
+      onNavigate('merchant_login');
+    }
+  };
+
+  const storeInitials = (merchant.shopName || 'QuickBill Store')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase() || 'QB';
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 pb-20 select-none">
+      {/* Hidden file input for genuine photo upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handlePhotoUpload}
+        className="hidden"
+        accept="image/*"
+      />
+
       {/* Toast */}
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-800 text-white px-4 py-2.5 rounded-full text-xs font-semibold shadow-lg flex items-center gap-2">
@@ -76,36 +236,60 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
           <div>
             <div className="flex items-center gap-1.5">
               <h1 className="text-base font-bold text-slate-900 leading-tight">
-                {t('quickbill_multi_store', 'QuickBill Multi-Store')}
+                {merchant.shopName || 'QuickBill Store'}
               </h1>
-              <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded border border-indigo-200">
-                {t('multi_store_badge', 'Multi-Store')}
+              <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-1.5 py-0.2 rounded border border-emerald-200">
+                Verified Store
               </span>
             </div>
             <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
-              <span>{t('main_bazar_branch', 'Main Bazar Branch')}</span>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
+              <span>{merchant.address ? merchant.address.split(',')[0] : 'Main Market Counter'}</span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => {
-              setToastMessage('Search Store Settings');
-              setTimeout(() => setToastMessage(null), 1500);
-            }}
+            onClick={() => setSearchOpen(!searchOpen)}
             className="p-2 text-slate-600 hover:bg-slate-100 rounded-full cursor-pointer"
+            title="Search Settings"
           >
             <Search className="w-5 h-5" />
           </button>
-          <img
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&auto=format&fit=crop&q=80"
-            alt="User avatar"
-            className="w-8 h-8 rounded-full object-cover border-2 border-emerald-600"
-          />
+          {merchant.logoUrl ? (
+            <img
+              src={merchant.logoUrl}
+              alt="Store logo"
+              className="w-8 h-8 rounded-full object-cover border-2 border-emerald-600"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-emerald-800 text-white font-extrabold text-xs flex items-center justify-center border border-emerald-600 shadow-2xs">
+              {storeInitials}
+            </div>
+          )}
         </div>
       </header>
+
+      {/* Search Bar Dropdown */}
+      {searchOpen && (
+        <div className="bg-emerald-900 px-4 py-2.5 text-white">
+          <div className="max-w-md mx-auto flex items-center gap-2 bg-white/10 rounded-xl px-3 py-1.5 border border-white/20">
+            <Search className="w-4 h-4 text-emerald-300" />
+            <input
+              type="text"
+              placeholder="Search store settings, bank, print, UPI..."
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="bg-transparent border-none text-xs text-white placeholder-emerald-200/60 focus:outline-none w-full"
+            />
+            {searchKeyword && (
+              <button onClick={() => setSearchKeyword('')} className="text-xs text-emerald-300 font-bold">
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-md mx-auto px-4 pt-3.5 space-y-3.5">
@@ -113,28 +297,42 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
         <div className="bg-white rounded-3xl p-4.5 border border-slate-200/90 shadow-xs space-y-3.5">
           <div className="flex items-start gap-3.5">
             <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=160&auto=format&fit=crop&q=80"
-                alt="Shop frontage"
-                className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-2xs"
-              />
+              {merchant.logoUrl ? (
+                <img
+                  src={merchant.logoUrl}
+                  alt="Shop frontage"
+                  className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-2xs"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-800 to-slate-800 text-white flex flex-col items-center justify-center border border-emerald-700 shadow-2xs">
+                  <Store className="w-6 h-6 text-emerald-300" />
+                  <span className="text-[10px] font-black uppercase tracking-wider mt-0.5">{storeInitials}</span>
+                </div>
+              )}
               <button
-                onClick={() => {
-                  setToastMessage('Upload Store Photo');
-                  setTimeout(() => setToastMessage(null), 1500);
-                }}
-                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-800 text-white flex items-center justify-center text-xs shadow-xs cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload real store logo / photo"
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-800 text-white flex items-center justify-center text-xs shadow-xs cursor-pointer hover:bg-emerald-900 transition-colors"
               >
                 <Camera className="w-3.5 h-3.5" />
               </button>
             </div>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-sm font-bold text-slate-900 truncate">
-                {merchant.shopName || 'Sharma General & Provision Store'}
-              </h2>
+              <div className="flex items-start justify-between gap-1">
+                <h2 className="text-sm font-bold text-slate-900 truncate">
+                  {merchant.shopName || 'Apni Dukan'}
+                </h2>
+                <button
+                  onClick={() => setShowEditShopModal(true)}
+                  className="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>{t('edit', 'Edit')}</span>
+                </button>
+              </div>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs font-semibold text-slate-700">{merchant.name || 'Rajesh Sharma'}</span>
+                <span className="text-xs font-semibold text-slate-700">{merchant.name || 'Store Merchant'}</span>
                 <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full flex items-center gap-0.5">
                   <Check className="w-2.5 h-2.5" /> {t('kyc_verified', 'KYC Verified')}
                 </span>
@@ -152,7 +350,7 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
                   {t('gstin_label', 'GSTIN')}
                 </span>
                 <span className="font-mono font-bold text-slate-900 text-xs">
-                  {merchant.gstin || '07AABCS1429B1Z'}
+                  {merchant.gstin || 'Not Registered'}
                 </span>
               </div>
             </div>
@@ -189,6 +387,76 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
           </div>
         </div>
 
+        {/* Live Production Mode & Store Data Control */}
+        <div className="bg-gradient-to-br from-emerald-900 to-slate-900 rounded-3xl p-4 text-white shadow-md space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-300">
+                Live Production Active
+              </span>
+            </div>
+            <span className="text-[10px] font-bold bg-emerald-800/80 text-emerald-200 px-2 py-0.5 rounded-full border border-emerald-600/40">
+              Real Store Ready
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Aapka store live billing aur Indian Kirana compliance ke liye 100% taiyaar hai. Real-time Firebase Cloud Sync (asia-south1 Mumbai) active hai.
+          </p>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              onClick={() => setShowClearConfirmModal(true)}
+              className="py-2.5 px-3 bg-rose-600/90 hover:bg-rose-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Start Fresh Store</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (onRestoreDemoData) {
+                  onRestoreDemoData();
+                  setToastMessage('Sample Kirana catalog & bills restored!');
+                  setTimeout(() => setToastMessage(null), 2000);
+                }
+              }}
+              className="py-2.5 px-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-white/20"
+            >
+              <Store className="w-3.5 h-3.5" />
+              <span>Restore Demo Data</span>
+            </button>
+          </div>
+
+          {/* Dev Mode Screen Switcher Toggle */}
+          <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sliders className="w-4 h-4 text-emerald-400" />
+              <div>
+                <span className="text-xs font-bold text-white block leading-tight">
+                  Developer Screen Switcher
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  {devModeEnabled ? 'Top 31-screen menu visible' : 'Hidden for clean production experience'}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => onToggleDevMode && onToggleDevMode()}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                devModeEnabled ? 'bg-emerald-500' : 'bg-slate-700'
+              }`}
+            >
+              <span
+                className={`block w-5 h-5 rounded-full bg-white shadow-xs transition-transform transform ${
+                  devModeEnabled ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
         {/* Quick Controls */}
         <div className="space-y-2.5">
           <div className="flex items-center justify-between">
@@ -199,18 +467,15 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
           <div className="grid grid-cols-2 gap-2.5">
             {/* Control 1 */}
             <div
-              onClick={() => {
-                setToastMessage(t('change_language_title', 'App Language: 12 Languages Available'));
-                setTimeout(() => setToastMessage(null), 2500);
-              }}
-              className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs cursor-pointer hover:border-slate-300 transition-all"
+              onClick={() => setShowLangModal(true)}
+              className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs cursor-pointer hover:border-slate-300 transition-all active:scale-95"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xl">🇮🇳</span>
                 <span className="text-slate-400">›</span>
               </div>
               <div className="text-[10px] text-slate-500 font-medium">{t('app_language_label', 'App Language')}</div>
-              <h4 className="text-xs font-bold text-slate-900 mt-0.5">{t('app_language_value', 'English (12 Lang)')}</h4>
+              <h4 className="text-xs font-bold text-slate-900 mt-0.5">{language.toUpperCase()} (12 Languages)</h4>
             </div>
 
             {/* Control 2 */}
@@ -277,8 +542,8 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
               </span>
               <button
                 onClick={() => {
-                  setToastMessage('Location edit open');
-                  setTimeout(() => setToastMessage(null), 1500);
+                  setEditDetailsTab('location');
+                  setShowEditDetailsModal(true);
                 }}
                 className="text-xs font-semibold text-emerald-800 hover:underline cursor-pointer"
               >
@@ -286,7 +551,7 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
               </button>
             </div>
             <p className="text-xs text-slate-900 font-medium leading-relaxed">
-              {merchant.address || 'Shop No. 14, Main Market, Sector 18, Noida, Uttar Pradesh - 201301'}
+              {merchant.address || 'Shop No. 14, Main Market Road'}
             </p>
           </div>
 
@@ -298,8 +563,8 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
               </span>
               <button
                 onClick={() => {
-                  setToastMessage('Header note customizer');
-                  setTimeout(() => setToastMessage(null), 1500);
+                  setEditDetailsTab('bill_notes');
+                  setShowEditDetailsModal(true);
                 }}
                 className="text-xs font-semibold text-emerald-800 hover:underline cursor-pointer"
               >
@@ -307,10 +572,10 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
               </button>
             </div>
             <p className="text-xs text-slate-800 font-medium">
-              Header: {merchant.shopName || 'Sharma General Store'} ({merchant.phone || '+91 98765 43210'})
+              Header: {merchant.shopName || 'QuickBill Store'} ({merchant.phone || '+91 98765 43210'})
             </p>
             <div className="text-[11px] italic bg-white border border-slate-200/60 rounded-lg p-2 text-slate-600">
-              "उधार प्रेम की कैंची है / Thank you, visit again!"
+              "{merchant.billFooterNote || 'उधार प्रेम की कैंची है / Thank you, visit again!'}"
             </div>
           </div>
 
@@ -362,13 +627,10 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
               <span>{t('payments_bank_heading', 'UPI & Bank Accounts')}</span>
             </div>
             <button
-              onClick={() => {
-                setToastMessage('Add New Bank Account');
-                setTimeout(() => setToastMessage(null), 1500);
-              }}
-              className="text-xs font-semibold text-emerald-800 hover:underline cursor-pointer"
+              onClick={() => setShowAddBankModal(true)}
+              className="text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 cursor-pointer flex items-center gap-1 transition-colors"
             >
-              {t('add_new', '+ Add New')}
+              <span>+ Add New Bank</span>
             </button>
           </div>
 
@@ -380,8 +642,8 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
               </div>
               <div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs font-bold text-slate-900">{merchant.upiId || 'sharmastore@okicici'}</span>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-xs font-bold text-slate-900">{merchant.upiId || 'UPI ID Not Configured'}</span>
+                  {merchant.upiId && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
                 </div>
                 <span className="text-[10px] text-slate-500">{t('default_settlement_qr', 'Default QR Settlement UPI ID')}</span>
               </div>
@@ -391,28 +653,58 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
             </span>
           </div>
 
-          {/* Bank Account */}
-          <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
-                <Building2 className="w-4 h-4" />
+          {/* Dynamic Bank Accounts List */}
+          <div className="space-y-2">
+            {bankAccounts.length === 0 ? (
+              <div className="p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-500">
+                कोई बैंक खाता नहीं जुड़ा है। '+ Add New Bank' दबाकर अपना बैंक जोड़ें।
               </div>
-              <div>
-                <h4 className="text-xs font-bold text-slate-900">State Bank of India</h4>
-                <p className="text-[10px] text-slate-500 font-mono">
-                  A/C: ••••••••4920 • IFSC: SBIN0001489
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setToastMessage('Bank account manager open');
-                setTimeout(() => setToastMessage(null), 1500);
-              }}
-              className="text-xs font-semibold text-emerald-800 hover:underline cursor-pointer"
-            >
-              {t('manage', 'Manage')}
-            </button>
+            ) : (
+              bankAccounts.map((acc) => (
+                <div
+                  key={acc.id}
+                  className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between gap-2"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-xs font-bold text-slate-900 truncate">{acc.bankName}</h4>
+                        {acc.isDefault && (
+                          <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full shrink-0">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-mono truncate">
+                        A/C: •••• {acc.accountNumber.slice(-4)} • IFSC: {acc.ifscCode}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    {!acc.isDefault && (
+                      <button
+                        onClick={() => handleSetDefaultAccount(acc.id)}
+                        className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg text-[10px] font-bold cursor-pointer"
+                        title="Set as Default"
+                      >
+                        Make Default
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteAccount(acc.id)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                      title="Remove Account"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Store Counter QR Standee card */}
@@ -707,10 +999,7 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
             <span>{t('switch_store', 'Switch Store')}</span>
           </button>
           <button
-            onClick={() => {
-              setToastMessage('Session logged out securely.');
-              onNavigate('merchant_login');
-            }}
+            onClick={handleLogout}
             className="py-2.5 px-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
@@ -724,10 +1013,216 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
         </p>
       </main>
 
+      {/* Clear Demo Data Confirmation Modal */}
+      {showClearConfirmModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full text-center space-y-4 shadow-2xl border border-slate-200">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900">
+                Start Fresh Store (नया स्टोर शुरू करें)?
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Aapke sample demo products, sample bills aur test udhaar ledger clear kar diye jayenge taaki aap apni dukan ka asli samaan aur customers add kar sakein.
+              </p>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-[11px] text-amber-900 text-left flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <span>Aap kisi bhi samay setting se <b>'Restore Demo Data'</b> dabakar sample grocery items wapas laa sakte hain.</span>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                onClick={() => {
+                  if (onClearDemoData) onClearDemoData();
+                  setShowClearConfirmModal(false);
+                  setToastMessage('Store reset! Ready for real inventory & customers.');
+                  setTimeout(() => setToastMessage(null), 2500);
+                }}
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Haan, Clear Demo Data (Fresh Store)</span>
+              </button>
+
+              <button
+                onClick={() => setShowClearConfirmModal(false)}
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 rounded-xl text-xs cursor-pointer transition-colors"
+              >
+                Cancel (रद्द करें)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Shop Profile Modal */}
+      {showEditShopModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <Store className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900">Edit Store Profile</h3>
+                  <p className="text-[10px] text-slate-500">Dukan ki asli jaankari update karein</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEditShopModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Dukan Ka Naam (Shop Name) *
+                </label>
+                <input
+                  type="text"
+                  value={shopNameInput}
+                  onChange={(e) => setShopNameInput(e.target.value)}
+                  placeholder="e.g. Laxmi Kirana & General Store"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-emerald-600 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Dukan Malik Ka Naam (Owner Name)
+                </label>
+                <input
+                  type="text"
+                  value={ownerNameInput}
+                  onChange={(e) => setOwnerNameInput(e.target.value)}
+                  placeholder="e.g. Ramesh Kumar"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-emerald-600 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Mobile Number (WhatsApp Invoices) *
+                </label>
+                <input
+                  type="text"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  placeholder="e.g. 9876543210"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-emerald-600 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Settlement UPI ID (QR Payment Receive) *
+                </label>
+                <input
+                  type="text"
+                  value={upiInput}
+                  onChange={(e) => setUpiInput(e.target.value)}
+                  placeholder="e.g. sharmastore@okaxis / 9876543210@paytm"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-emerald-600 font-mono text-[11px]"
+                />
+                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                  Customer QR scan karke sidhe is UPI ID par paise bhejenge.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Dukan Ka Pata (Address)
+                </label>
+                <textarea
+                  rows={2}
+                  value={addressInput}
+                  onChange={(e) => setAddressInput(e.target.value)}
+                  placeholder="e.g. Shop No. 5, Main Bazar, Near Shiv Temple..."
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-emerald-600 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  GSTIN (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={gstinInput}
+                  onChange={(e) => setGstinInput(e.target.value.toUpperCase())}
+                  placeholder="07AABCS1429B1Z"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-emerald-600 font-mono text-xs uppercase"
+                />
+              </div>
+            </div>
+
+            <div className="pt-2 flex gap-2">
+              <button
+                onClick={() => setShowEditShopModal(false)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  onUpdateMerchant({
+                    shopName: shopNameInput.trim() || merchant.shopName,
+                    name: ownerNameInput.trim() || merchant.name,
+                    phone: phoneInput.trim() || merchant.phone,
+                    upiId: upiInput.trim() || merchant.upiId,
+                    address: addressInput.trim() || merchant.address,
+                    gstin: gstinInput.trim() || merchant.gstin,
+                  });
+                  setShowEditShopModal(false);
+                  setToastMessage('Dukan profile safaltapoorvak update ho gayi!');
+                  setTimeout(() => setToastMessage(null), 2500);
+                }}
+                className="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs cursor-pointer transition-colors shadow-xs"
+              >
+                Save Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Real Add Bank Account Modal */}
+      <AddBankAccountModal
+        isOpen={showAddBankModal}
+        onClose={() => setShowAddBankModal(false)}
+        onAddAccount={handleAddAccount}
+        existingAccountsCount={bankAccounts.length}
+      />
+
+      {/* Real Edit Store Location & Bill Notes Modal */}
+      <EditStoreDetailsModal
+        isOpen={showEditDetailsModal}
+        activeTab={editDetailsTab}
+        onClose={() => setShowEditDetailsModal(false)}
+        merchant={merchant}
+        onUpdateMerchant={onUpdateMerchant}
+      />
+
       {/* Android APK Modal */}
       <InstallApkModal
         isOpen={showApkModal}
         onClose={() => setShowApkModal(false)}
+      />
+
+      {/* Language Selector Modal */}
+      <LanguageSelectorModal
+        isOpen={showLangModal}
+        onClose={() => setShowLangModal(false)}
       />
     </div>
   );

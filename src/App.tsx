@@ -15,13 +15,17 @@ import {
 } from './data/initialData';
 import {
   initializeStoreCloudData,
-  syncBillToCloud,
   syncBillWithLedgerBatch,
   syncCustomerUdhaarToCloud,
+  syncStoreProfileToCloud,
+  syncProductToCloud,
+  syncCustomerToCloud,
   subscribeToBills,
   subscribeToCustomers,
   subscribeToProducts,
   subscribeToSyncStatus,
+  getStoreMerchantId,
+  auth,
   CloudSyncStatus,
   DATA_CENTER_REGION,
 } from './services/firebase';
@@ -58,6 +62,7 @@ import { VyaparInstantLoanScreen } from './components/VyaparInstantLoanScreen';
 import { BankSettlementPayoutsScreen } from './components/BankSettlementPayoutsScreen';
 import { GstEwayBillScreen } from './components/GstEwayBillScreen';
 import { StoreProfileSetupScreen } from './components/StoreProfileSetupScreen';
+import { StoreSetupModal } from './components/StoreSetupModal';
 
 // Navigation & Icons
 import {
@@ -79,13 +84,107 @@ import { LanguageSelectorModal } from './components/LanguageSelectorModal';
 
 function QuickBillApp() {
   const { language, setLanguage, supportedLanguages, t } = useLanguage();
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>('home_dashboard');
-  const [merchant, setMerchant] = useState<MerchantProfile>(initialMerchant);
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
-  const [bills, setBills] = useState<Bill[]>(initialBills);
+  
+  // Real authentication session check
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('quickbill_session') === 'true';
+  });
+
+  // If user is not logged in, start at Splash screen
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(() => {
+    return localStorage.getItem('quickbill_session') === 'true' ? 'home_dashboard' : 'splash';
+  });
+  
+  // Clean store merchant profile - starts empty for real users until configured
+  const [merchant, setMerchant] = useState<MerchantProfile>(() => {
+    const saved = localStorage.getItem('quickbill_merchant');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {}
+    }
+    return {
+      name: '',
+      phone: '',
+      shopName: '',
+      shopCategory: 'Kirana & FMCG Grocery',
+      address: '',
+      upiId: '',
+      isPro: false,
+    };
+  });
+
+  const [showStoreSetupModal, setShowStoreSetupModal] = useState(false);
+  
+  // Products start empty for fresh real store unless sample data is requested
+  const [products, setProducts] = useState<Product[]>(() => {
+    const hasData = localStorage.getItem('quickbill_has_data') === 'true';
+    return hasData ? initialProducts : [];
+  });
+  const [customers, setCustomers] = useState<Customer[]>(() => {
+    const hasData = localStorage.getItem('quickbill_has_data') === 'true';
+    return hasData ? initialCustomers : [];
+  });
+  const [bills, setBills] = useState<Bill[]>(() => {
+    const hasData = localStorage.getItem('quickbill_has_data') === 'true';
+    return hasData ? initialBills : [];
+  });
   const [showLangModal, setShowLangModal] = useState(false);
   const [syncStatus, setSyncStatus] = useState<CloudSyncStatus>('online_synced');
+  const [devModeEnabled, setDevModeEnabled] = useState(false);
+  const isFreshStore = bills.length === 0 && products.length === 0;
+
+  // Active isolated merchant identifier (Unique per store/phone/auth user)
+  const activeMerchantId = getStoreMerchantId(merchant.phone, auth.currentUser?.uid);
+
+  // Update merchant profile with local persistence & Cloud Firestore sync
+  const handleUpdateMerchant = (updated: Partial<MerchantProfile>) => {
+    setMerchant((prev) => {
+      const next = { ...prev, ...updated };
+      try {
+        localStorage.setItem('quickbill_merchant', JSON.stringify(next));
+      } catch {}
+      // Sync store profile to India Cloud Datacenter
+      syncStoreProfileToCloud(activeMerchantId, next);
+      return next;
+    });
+  };
+
+  const handleAuthSuccess = () => {
+    setIsLoggedIn(true);
+    localStorage.setItem('quickbill_session', 'true');
+    setCurrentScreen('home_dashboard');
+    if (!merchant.shopName) {
+      setShowStoreSetupModal(true);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('quickbill_session');
+    setIsLoggedIn(false);
+    setCurrentScreen('merchant_login');
+  };
+
+  // Clear demo mock data and start a real fresh production store
+  const handleClearDemoData = () => {
+    localStorage.removeItem('quickbill_has_data');
+    setBills([]);
+    setCustomers([]);
+    setProducts([]);
+  };
+
+  // Restore sample Kirana store catalog for demo/testing
+  const handleRestoreDemoData = () => {
+    localStorage.setItem('quickbill_has_data', 'true');
+    setBills(initialBills);
+    setCustomers(initialCustomers);
+    setProducts(initialProducts);
+    setMerchant((prev) => ({
+      ...prev,
+      shopName: prev.shopName || 'Shree Ganesh Kirana Store',
+      name: prev.name || 'Dukan Malik',
+    }));
+  };
 
   // Cross-screen state communication
   const [voiceParsedCart, setVoiceParsedCart] = useState<BillItem[] | undefined>(undefined);
@@ -96,7 +195,8 @@ function QuickBillApp() {
 
   // Sync with India Cloud Firestore Datacenter (asia-south1)
   useEffect(() => {
-    initializeStoreCloudData();
+    const isDemo = localStorage.getItem('quickbill_has_data') === 'true';
+    initializeStoreCloudData(activeMerchantId, isDemo);
 
     const unsubSync = subscribeToSyncStatus((st) => {
       setSyncStatus(st);
@@ -106,19 +206,19 @@ function QuickBillApp() {
       if (cloudBills && cloudBills.length) {
         setBills(cloudBills);
       }
-    });
+    }, activeMerchantId);
 
     const unsubCustomers = subscribeToCustomers((cloudCustomers) => {
       if (cloudCustomers && cloudCustomers.length) {
         setCustomers(cloudCustomers);
       }
-    });
+    }, activeMerchantId);
 
     const unsubProducts = subscribeToProducts((cloudProducts) => {
       if (cloudProducts && cloudProducts.length) {
         setProducts(cloudProducts);
       }
-    });
+    }, activeMerchantId);
 
     return () => {
       unsubSync();
@@ -126,7 +226,7 @@ function QuickBillApp() {
       unsubCustomers();
       unsubProducts();
     };
-  }, []);
+  }, [activeMerchantId]);
 
   // Authentication Flow Handlers
   const handleSelectLanguage = (lang: 'hi' | 'en' | 'gu' | 'mr') => {
@@ -142,30 +242,35 @@ function QuickBillApp() {
     setCurrentScreen('home_dashboard');
   };
 
-  // Business Action Handlers with Atomic Batch Persistence
+  // Business Action Handlers with Atomic Batch Persistence & Real-time Stock Deduction
   const handleSaveBill = (newBill: Bill) => {
     setBills((prev) => [newBill, ...prev]);
 
-    // Atomic write to Firestore
+    // Atomic write to Firestore with automatic real-time product stock deduction
     if ((newBill.paymentMode === 'UDHAAR' || newBill.paymentMode === 'SPLIT') && newBill.customerId) {
       const udhaarAmt = newBill.udhaarAmount || newBill.grandTotal;
       const targetCustomer = customers.find((c) => c.id === newBill.customerId);
       const newBal = (targetCustomer?.totalUdhaar || 0) + udhaarAmt;
 
-      syncBillWithLedgerBatch(newBill, {
-        customerId: newBill.customerId,
-        newBalance: newBal,
-        debitAmount: udhaarAmt,
-      });
+      syncBillWithLedgerBatch(
+        newBill,
+        {
+          customerId: newBill.customerId,
+          newBalance: newBal,
+          debitAmount: udhaarAmt,
+        },
+        activeMerchantId,
+        newBill.items
+      );
 
       setCustomers((prev) =>
         prev.map((c) => (c.id === newBill.customerId ? { ...c, totalUdhaar: newBal } : c))
       );
     } else {
-      syncBillToCloud(newBill);
+      syncBillWithLedgerBatch(newBill, undefined, activeMerchantId, newBill.items);
     }
 
-    // Deduct stock quantities from inventory
+    // Immediately deduct stock quantities in local state for instantaneous UI responsiveness
     setProducts((prev) =>
       prev.map((p) => {
         const item = newBill.items.find((it) => it.productId === p.id);
@@ -179,6 +284,7 @@ function QuickBillApp() {
 
   const handleAddCustomer = (newCustomer: Customer) => {
     setCustomers((prev) => [newCustomer, ...prev]);
+    syncCustomerToCloud(newCustomer, activeMerchantId);
   };
 
   const handleUpdateCustomerUdhaar = (customerId: string, newBalance: number) => {
@@ -186,11 +292,12 @@ function QuickBillApp() {
       prev.map((c) => (c.id === customerId ? { ...c, totalUdhaar: newBalance } : c))
     );
     // Asynchronously sync customer balance to India cloud backend
-    syncCustomerUdhaarToCloud(customerId, newBalance);
+    syncCustomerUdhaarToCloud(customerId, newBalance, activeMerchantId);
   };
 
   const handleAddNewProduct = (newProduct: Product) => {
     setProducts((prev) => [newProduct, ...prev]);
+    syncProductToCloud(newProduct, activeMerchantId);
   };
 
   const handleUpdateProductsStock = (
@@ -255,63 +362,65 @@ function QuickBillApp() {
 
   return (
     <div className="min-h-screen bg-surface text-on-surface flex flex-col font-sans relative antialiased">
-      {/* Top Demo Screen Quick Switcher Ribbon */}
-      <div className="bg-surface-container-lowest border-b border-outline-variant/20 px-3 py-1.5 flex items-center justify-between text-[11px] z-40 sticky top-0 backdrop-blur-md bg-surface-container-lowest/90">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-          <span className="font-bold text-on-surface tracking-wide">QuickBill AI Vyapar</span>
-          {/* Live Cloud Sync Pill */}
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-              syncStatus === 'online_synced'
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                : syncStatus === 'syncing'
-                ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                : 'bg-slate-200 text-slate-800 border border-slate-300'
-            }`}
-            title={`Firebase Datacenter: ${DATA_CENTER_REGION}`}
-          >
+      {/* Top Demo Screen Quick Switcher Ribbon - Only active when Developer Mode is enabled in settings */}
+      {devModeEnabled && isPostAuthScreen && (
+        <div className="bg-surface-container-lowest border-b border-outline-variant/20 px-3 py-1.5 flex items-center justify-between text-[11px] z-40 sticky top-0 backdrop-blur-md bg-surface-container-lowest/90">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="font-bold text-on-surface tracking-wide">QuickBill AI Vyapar</span>
+            {/* Live Cloud Sync Pill */}
             <span
-              className={`w-1.5 h-1.5 rounded-full ${
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
                 syncStatus === 'online_synced'
-                  ? 'bg-emerald-600'
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                   : syncStatus === 'syncing'
-                  ? 'bg-amber-600 animate-spin'
-                  : 'bg-slate-500'
+                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                  : 'bg-slate-200 text-slate-800 border border-slate-300'
               }`}
-            />
-            {syncStatus === 'online_synced'
-              ? '🇮🇳 Mumbai Cloud Synced'
-              : syncStatus === 'syncing'
-              ? 'Syncing...'
-              : 'Offline (Saved Locally)'}
-          </span>
-          <span className="hidden sm:inline text-on-surface-variant text-[10px]">
-            • {merchant.shopName}
-          </span>
-        </div>
+              title={`Firebase Datacenter: ${DATA_CENTER_REGION}`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  syncStatus === 'online_synced'
+                    ? 'bg-emerald-600'
+                    : syncStatus === 'syncing'
+                    ? 'bg-amber-600 animate-spin'
+                    : 'bg-slate-500'
+                }`}
+              />
+              {syncStatus === 'online_synced'
+                ? '🇮🇳 Mumbai Cloud Synced'
+                : syncStatus === 'syncing'
+                ? 'Syncing...'
+                : 'Offline (Saved Locally)'}
+            </span>
+            <span className="hidden sm:inline text-on-surface-variant text-[10px]">
+              • {merchant.shopName || 'Store'}
+            </span>
+          </div>
 
-        {/* Jump-to-screen selector and Language Switcher */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowLangModal(true)}
-            className="bg-surface-container-high hover:bg-surface-container text-on-surface border border-outline-variant/30 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-            title={t('change_language_title', 'Change App Language')}
-          >
-            <Globe2 className="w-3.5 h-3.5 text-primary" />
-            <span>{supportedLanguages.find((l) => l.code === language)?.native || 'हिन्दी'}</span>
-            <span className="text-[9px] text-primary">▼</span>
-          </button>
+          {/* Jump-to-screen selector and Language Switcher */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowLangModal(true)}
+              className="bg-surface-container-high hover:bg-surface-container text-on-surface border border-outline-variant/30 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+              title={t('change_language_title', 'Change App Language')}
+            >
+              <Globe2 className="w-3.5 h-3.5 text-primary" />
+              <span>{supportedLanguages.find((l) => l.code === language)?.native || 'हिन्दी'}</span>
+              <span className="text-[9px] text-primary">▼</span>
+            </button>
 
-          <button
-            onClick={() => setShowScreenDrawer(!showScreenDrawer)}
-            className="bg-surface-container-high hover:bg-surface-container text-primary border border-outline-variant/30 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{t('screen_menu', 'स्क्रीन मेन्यू')}</span>
-          </button>
+            <button
+              onClick={() => setShowScreenDrawer(!showScreenDrawer)}
+              className="bg-surface-container-high hover:bg-surface-container text-primary border border-outline-variant/30 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>{t('screen_menu', 'स्क्रीन मेन्यू')}</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Screen Selection Dropdown Drawer */}
       {showScreenDrawer && (
@@ -394,15 +503,17 @@ function QuickBillApp() {
           <MerchantLoginScreen
             onNavigate={setCurrentScreen}
             merchant={merchant}
-            onUpdateMerchant={(updated) => setMerchant((prev) => ({ ...prev, ...updated }))}
-            onSetEnteredPhone={(ph) => setMerchant((prev) => ({ ...prev, phone: ph }))}
+            onUpdateMerchant={handleUpdateMerchant}
+            onSetEnteredPhone={(ph) => handleUpdateMerchant({ phone: ph })}
+            onAuthSuccess={handleAuthSuccess}
           />
         )}
 
         {currentScreen === 'otp_verification' && (
           <OtpVerificationScreen
             onNavigate={setCurrentScreen}
-            phone={merchant.phone || '9876543210'}
+            phone={merchant.phone || ''}
+            onOtpSuccess={handleAuthSuccess}
           />
         )}
 
@@ -413,6 +524,8 @@ function QuickBillApp() {
             customers={customers}
             products={products}
             onNavigate={setCurrentScreen}
+            onOpenStoreSetup={() => setShowStoreSetupModal(true)}
+            isFreshStore={isFreshStore}
           />
         )}
 
@@ -571,6 +684,7 @@ function QuickBillApp() {
           <SplashScreen
             onNavigate={setCurrentScreen}
             shopName={merchant.shopName}
+            isLoggedIn={isLoggedIn}
           />
         )}
 
@@ -578,7 +692,12 @@ function QuickBillApp() {
           <StoreProfileSetupScreen
             merchant={merchant}
             onNavigate={setCurrentScreen}
-            onUpdateMerchant={(updated) => setMerchant((prev) => ({ ...prev, ...updated }))}
+            onUpdateMerchant={handleUpdateMerchant}
+            onClearDemoData={handleClearDemoData}
+            onRestoreDemoData={handleRestoreDemoData}
+            devModeEnabled={devModeEnabled}
+            onToggleDevMode={() => setDevModeEnabled(!devModeEnabled)}
+            onLogout={handleLogout}
           />
         )}
 
@@ -650,6 +769,17 @@ function QuickBillApp() {
 
       {/* Global Regional Language Selector Modal */}
       <LanguageSelectorModal isOpen={showLangModal} onClose={() => setShowLangModal(false)} />
+
+      {/* Real Store Onboarding & Setup Modal */}
+      <StoreSetupModal
+        isOpen={showStoreSetupModal}
+        onClose={() => setShowStoreSetupModal(false)}
+        merchant={merchant}
+        onSaveMerchant={handleUpdateMerchant}
+        onStartFreshStore={handleClearDemoData}
+        onRestoreDemoData={handleRestoreDemoData}
+        isFreshStore={isFreshStore}
+      />
     </div>
   );
 }

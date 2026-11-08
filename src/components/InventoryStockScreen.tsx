@@ -14,7 +14,7 @@ export const InventoryStockScreen: React.FC<InventoryStockScreenProps> = ({
   onNavigate,
   onAddNewProduct,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -178,7 +178,7 @@ export const InventoryStockScreen: React.FC<InventoryStockScreenProps> = ({
                   </div>
                   <div>
                     <div className="font-bold text-on-surface text-sm flex items-center gap-2">
-                      <span>{prod.name}</span>
+                      <span>{language === 'en' ? prod.name : (prod.nameHindi || prod.name)}</span>
                       {isLow && (
                         <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-black border border-amber-500/40">
                           {t('low_stock_badge', 'कम स्टॉक')}

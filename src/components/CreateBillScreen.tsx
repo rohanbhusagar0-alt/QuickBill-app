@@ -41,8 +41,8 @@ export const CreateBillScreen: React.FC<CreateBillScreenProps> = ({
   scannedProduct,
 }) => {
   const { language, t } = useLanguage();
-  const [customerName, setCustomerName] = useState('Rahul Sharma');
-  const [customerPhone, setCustomerPhone] = useState('9876543210');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [cart, setCart] = useState<BillItem[]>(() => {
     if (voicePrefilledItems && voicePrefilledItems.length > 0) {
       return voicePrefilledItems;
@@ -121,7 +121,7 @@ export const CreateBillScreen: React.FC<CreateBillScreenProps> = ({
     } else {
       const newItem: BillItem = {
         productId: product.id,
-        name: product.name,
+        name: language === 'en' ? product.name : (product.nameHindi || product.name),
         nameHindi: product.nameHindi,
         qty: 1,
         unit: product.unit,
@@ -319,7 +319,9 @@ export const CreateBillScreen: React.FC<CreateBillScreenProps> = ({
                 onClick={() => handleAddToCart(p)}
                 className="bg-surface hover:bg-emerald-900/30 border border-outline-variant/30 hover:border-emerald-500/40 px-2.5 py-1.5 rounded-xl text-left shrink-0 cursor-pointer transition-all active:scale-95"
               >
-                <div className="text-xs font-bold text-on-surface truncate max-w-[130px]">{p.name}</div>
+                <div className="text-xs font-bold text-on-surface truncate max-w-[130px]">
+                  {language === 'en' ? p.name : (p.nameHindi || p.name)}
+                </div>
                 <div className="text-[11px] text-primary font-semibold">₹{p.sellingPrice}</div>
               </button>
             ))}
@@ -444,6 +446,33 @@ export const CreateBillScreen: React.FC<CreateBillScreenProps> = ({
               <span>{t('split_payment', 'स्प्लिट')}</span>
             </button>
           </div>
+
+          {/* Dynamic Counter UPI QR Code Preview when UPI is selected */}
+          {paymentMode === 'UPI' && grandTotal > 0 && (
+            <div className="mt-3 bg-blue-50/60 border border-blue-200/80 rounded-2xl p-3 flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 text-blue-900 font-extrabold text-xs">
+                  <QrCode className="w-4 h-4 text-blue-600" />
+                  <span>Dynamic Counter UPI QR</span>
+                </div>
+                <p className="text-[11px] text-blue-800 mt-0.5 font-medium">
+                  Scan to Pay <span className="font-bold text-blue-950">₹{grandTotal}</span> directly to <span className="font-mono">{merchant.upiId || 'sharmastore@okicici'}</span>
+                </p>
+                <span className="text-[10px] text-blue-600 font-semibold block mt-1">
+                  Supports PhonePe, GPay, Paytm, BHIM & all UPI apps
+                </span>
+              </div>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(
+                  `upi://pay?pa=${merchant.upiId || 'sharmastore@okicici'}&pn=${encodeURIComponent(
+                    merchant.shopName || 'QuickBill Store'
+                  )}&am=${grandTotal}&cu=INR&tn=Counter-Bill`
+                )}`}
+                alt="Dynamic UPI QR"
+                className="w-18 h-18 rounded-xl border border-blue-200 bg-white p-1 shrink-0 shadow-2xs"
+              />
+            </div>
+          )}
         </div>
 
         {/* Invoice Summary Breakdown */}
@@ -502,17 +531,36 @@ export const CreateBillScreen: React.FC<CreateBillScreenProps> = ({
 
       {/* Success Modal */}
       {showSuccessModal && createdBill && (
-        <div className="fixed inset-0 bg-inverse-surface/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest border border-primary/30 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10" />
+        <div className="fixed inset-0 bg-inverse-surface/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-surface-container-lowest border border-primary/30 rounded-3xl p-5 max-w-sm w-full text-center space-y-3.5 shadow-2xl my-auto">
+            <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
 
             <div>
-              <h3 className="text-xl font-black text-on-surface">{t('payment_success', 'बिल सफलतापूर्वक बन गया!')}</h3>
-              <p className="text-xs text-on-surface-variant mt-1">
+              <h3 className="text-lg font-black text-on-surface">{t('payment_success', 'बिल सफलतापूर्वक बन गया!')}</h3>
+              <p className="text-xs text-on-surface-variant mt-0.5">
                 {t('bill_no', 'बिल #')}: {createdBill.billNumber} • {t('grand_total', 'राशि')} ₹{createdBill.grandTotal}
               </p>
+            </div>
+
+            {/* Dynamic UPI Payment QR code in Success Modal */}
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 flex flex-col items-center">
+              <span className="text-[11px] font-extrabold text-blue-900 mb-1">
+                Scan & Pay ₹{createdBill.grandTotal} (UPI)
+              </span>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
+                  `upi://pay?pa=${merchant.upiId || 'sharmastore@okicici'}&pn=${encodeURIComponent(
+                    merchant.shopName || 'QuickBill Store'
+                  )}&am=${createdBill.grandTotal}&cu=INR&tn=Bill-${createdBill.billNumber}`
+                )}`}
+                alt="UPI Payment QR"
+                className="w-28 h-28 rounded-lg bg-white p-1 border border-blue-200 shadow-2xs"
+              />
+              <span className="text-[10px] text-blue-700 font-mono mt-1">
+                {merchant.upiId || 'sharmastore@okicici'}
+              </span>
             </div>
 
             <div className="bg-surface p-3 rounded-2xl border border-outline-variant/30 text-xs text-left space-y-1">
@@ -530,16 +578,23 @@ export const CreateBillScreen: React.FC<CreateBillScreenProps> = ({
               </div>
             </div>
 
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2 pt-1">
+              <button
+                onClick={() => window.print()}
+                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print 58mm Thermal Receipt (सीधा प्रिंट)</span>
+              </button>
+
               <button
                 onClick={() => {
                   setShowSuccessModal(false);
                   onNavigate('thermal_printer_designer');
                 }}
-                className="w-full bg-primary hover:bg-primary-container text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                className="w-full bg-surface-container-lowest hover:bg-surface-container border border-outline-variant/30 text-on-surface font-semibold py-2 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
               >
-                <Printer className="w-4 h-4" />
-                <span>{t('printer_designer', 'थर्मल रसीद प्रिंटर प्रिव्यू देखें')}</span>
+                <span>{t('printer_designer', 'थर्मal रसीद डिज़ाइनर देखें')}</span>
               </button>
 
               <button
@@ -548,11 +603,113 @@ export const CreateBillScreen: React.FC<CreateBillScreenProps> = ({
                   setCart([]);
                   onNavigate('home_dashboard');
                 }}
-                className="w-full bg-surface-container-lowest hover:bg-surface-container border border-outline-variant/30 text-on-surface font-semibold py-2.5 rounded-xl text-xs cursor-pointer shadow-2xs"
+                className="w-full bg-surface-container-low hover:bg-surface-container text-on-surface font-semibold py-2 rounded-xl text-xs cursor-pointer"
               >
                 {t('done', 'डैशबोर्ड पर जाएं (Done)')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 58mm Thermal Printable Receipt (Visible only when printing) */}
+      {createdBill && (
+        <div id="thermal-receipt" className="hidden print:block">
+          <style>{`
+            @media print {
+              body * {
+                visibility: hidden !important;
+              }
+              #thermal-receipt, #thermal-receipt * {
+                visibility: visible !important;
+              }
+              #thermal-receipt {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 58mm !important;
+                margin: 0 !important;
+                padding: 4px 6px !important;
+                font-family: 'Courier New', Courier, monospace !important;
+                font-size: 11px !important;
+                line-height: 1.3 !important;
+                color: #000 !important;
+                background: #fff !important;
+              }
+            }
+          `}</style>
+
+          <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{merchant.shopName || 'QUICKBILL STORE'}</div>
+            <div style={{ fontSize: '9px' }}>{merchant.address || 'Main Market, India'}</div>
+            <div style={{ fontSize: '9px' }}>Ph: {merchant.phone || '+91 98765 43210'}</div>
+            {merchant.gstin && <div style={{ fontSize: '9px' }}>GSTIN: {merchant.gstin}</div>}
+          </div>
+
+          <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }} />
+
+          <div style={{ fontSize: '10px' }}>
+            <div>Bill No: <b>#{createdBill.billNumber}</b></div>
+            <div>Date: {createdBill.date || new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</div>
+            <div>Cust: {createdBill.customerName} ({createdBill.customerPhone})</div>
+          </div>
+
+          <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }} />
+
+          <table style={{ width: '100%', fontSize: '10px', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #000' }}>
+                <th style={{ width: '55%' }}>Item</th>
+                <th style={{ width: '20%', textAlign: 'center' }}>Qty</th>
+                <th style={{ width: '25%', textAlign: 'right' }}>Amt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {createdBill.items.map((it, idx) => (
+                <tr key={idx}>
+                  <td style={{ wordBreak: 'break-word' }}>{it.name}</td>
+                  <td style={{ textAlign: 'center' }}>{it.qty}</td>
+                  <td style={{ textAlign: 'right' }}>₹{it.total}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }} />
+
+          <div style={{ fontSize: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Subtotal:</span>
+              <span>₹{createdBill.subtotal.toFixed(2)}</span>
+            </div>
+            {createdBill.discountTotal > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Discount:</span>
+                <span>-₹{createdBill.discountTotal.toFixed(2)}</span>
+              </div>
+            )}
+            {createdBill.taxTotal > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>GST Tax:</span>
+                <span>₹{createdBill.taxTotal.toFixed(2)}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 'bold', marginTop: '3px' }}>
+              <span>GRAND TOTAL:</span>
+              <span>₹{createdBill.grandTotal}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px', fontSize: '10px' }}>
+              <span>Payment Mode:</span>
+              <span><b>{createdBill.paymentMode}</b></span>
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+          <div style={{ textAlign: 'center', fontSize: '9px' }}>
+            <div>"उधार प्रेम की कैंची है"</div>
+            <div style={{ fontWeight: 'bold', marginTop: '2px' }}>Thank You! Visit Again</div>
+            <div style={{ fontSize: '8px', color: '#555', marginTop: '2px' }}>Powered by QuickBill Kirana POS</div>
           </div>
         </div>
       )}

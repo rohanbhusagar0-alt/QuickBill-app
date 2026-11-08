@@ -22,10 +22,8 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
     onClose();
   };
 
-  const handleSelectDirect = (code: Language) => {
+  const handleSelectOption = (code: Language) => {
     setSelectedLang(code);
-    setLanguage(code);
-    onClose();
   };
 
   return (
@@ -72,7 +70,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
             return (
               <button
                 key={lang.code}
-                onClick={() => handleSelectDirect(lang.code)}
+                onClick={() => handleSelectOption(lang.code)}
                 className={`lang-option text-left p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
                   isSelected
                     ? 'border-primary bg-primary/5 shadow-xs'

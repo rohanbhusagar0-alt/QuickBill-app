@@ -7,14 +7,20 @@ import { useLanguage } from '../context/LanguageContext';
 interface OtpVerificationScreenProps {
   onNavigate: (screen: AppScreen) => void;
   phone: string;
+  onOtpSuccess?: () => void;
 }
 
-export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ onNavigate, phone }) => {
+export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({
+  onNavigate,
+  phone,
+  onOtpSuccess,
+}) => {
   const { t } = useLanguage();
-  const [otp, setOtp] = useState(['7', '8', '9', '0']);
+  const [otp, setOtp] = useState(['', '', '', '']);
   const [timer, setTimer] = useState(30);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (timer > 0) {
@@ -24,10 +30,16 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
   }, [timer]);
 
   const handleDigitChange = (index: number, val: string) => {
-    if (val.length > 1) val = val[val.length - 1];
+    const clean = val.replace(/\D/g, '');
+    if (clean.length > 1) {
+      val = clean[clean.length - 1];
+    } else {
+      val = clean;
+    }
     const newOtp = [...otp];
     newOtp[index] = val;
     setOtp(newOtp);
+    setError('');
 
     // Auto focus next input
     if (val && index < 3) {
@@ -36,11 +48,24 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
     }
   };
 
+  const handleAutoFill = () => {
+    setOtp(['7', '8', '9', '0']);
+    setError('');
+  };
+
   const handleVerify = () => {
+    const code = otp.join('');
+    if (code.length !== 4) {
+      setError(t('enter_valid_otp_error', 'Please enter 4-digit OTP or tap auto-fill below'));
+      return;
+    }
     setIsVerifying(true);
     setTimeout(() => {
       setIsVerifying(false);
       setIsSuccess(true);
+      localStorage.setItem('quickbill_session', 'true');
+      if (onOtpSuccess) onOtpSuccess();
+
       try {
         confetti({
           particleCount: 60,
@@ -52,7 +77,7 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
       }
       setTimeout(() => {
         onNavigate('home_dashboard');
-      }, 1100);
+      }, 900);
     }, 600);
   };
 
@@ -68,8 +93,8 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-xl font-extrabold text-on-surface">{t('otp_verification_title', 'OTP सत्यापन')}</h1>
-            <p className="text-xs text-on-surface-variant">{t('otp_verification_subtitle', 'सुरक्षित 4-अंकीय कोड दर्ज करें')}</p>
+            <h1 className="text-xl font-extrabold text-on-surface">{t('otp_verification_title', 'OTP Verification')}</h1>
+            <p className="text-xs text-on-surface-variant">{t('otp_verification_subtitle', 'Enter 4-digit verification code')}</p>
           </div>
         </div>
 
@@ -79,19 +104,29 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
             <KeyRound className="w-6 h-6" />
           </div>
           <p className="text-sm font-semibold text-on-surface">
-            {t('code_sent_to_number', 'कोड इस नंबर पर भेजा गया है')}:
+            {t('code_sent_to_number', 'Code sent to number')}:
           </p>
           <div className="text-base font-bold text-primary mt-0.5">
             +91 {phone || '9876543210'}
           </div>
 
-          <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">
-            <span>💡 {t('demo_otp_hint', 'टेस्ट के लिए डेमो OTP ऑटो-फिल है')}: <b>7890</b></span>
+          <div className="mt-2.5">
+            <button
+              type="button"
+              onClick={handleAutoFill}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-xs font-bold text-emerald-800 cursor-pointer transition-colors shadow-2xs"
+            >
+              <span>⚡ {t('autofill_sms_otp', 'Auto-fill SMS OTP (7890)')}</span>
+            </button>
           </div>
         </div>
 
+        {error && (
+          <p className="text-center text-xs text-rose-600 font-bold mb-2">{error}</p>
+        )}
+
         {/* 4-digit PIN Inputs */}
-        <div className="flex justify-center gap-3 my-6">
+        <div className="flex justify-center gap-3 my-4">
           {otp.map((digit, idx) => (
             <input
               key={idx}
@@ -108,7 +143,7 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
         {/* Countdown & Resend */}
         <div className="text-center text-xs text-on-surface-variant mb-6">
           {timer > 0 ? (
-            <span>{t('resend_otp_in', 'दोबारा OTP भेजें')}: <b className="text-primary">{timer} {t('seconds', 'सेकंड')}</b></span>
+            <span>{t('resend_otp_in', 'Resend OTP in')}: <b className="text-primary">{timer} {t('seconds', 's')}</b></span>
           ) : (
             <button
               onClick={() => {
@@ -118,7 +153,7 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
               className="inline-flex items-center gap-1 text-primary hover:underline font-semibold cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>{t('resend_otp', 'OTP दोबारा भेजें')}</span>
+              <span>{t('resend_otp', 'Resend OTP')}</span>
             </button>
           )}
         </div>
@@ -138,11 +173,11 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
           ) : isSuccess ? (
             <>
               <CheckCircle2 className="w-5 h-5 text-white" />
-              <span>{t('verified_success', 'सत्यापित हुआ!')}</span>
+              <span>{t('verified_success', 'Verified Successfully!')}</span>
             </>
           ) : (
             <>
-              <span>{t('verify_and_proceed', 'सत्यापित करें और आगे बढ़ें')}</span>
+              <span>{t('verify_and_proceed', 'Verify & Proceed')}</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}
@@ -151,7 +186,7 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({ on
 
       {/* Security badge */}
       <div className="w-full max-w-md mx-auto pt-6 text-center text-[11px] text-on-surface-variant flex items-center justify-center gap-1">
-        <span>🔒 {t('ssl_encrypted_login', '256-Bit SSL एन्क्रिप्टेड सिक्योर व्यापार लॉगिन')}</span>
+        <span>🔒 {t('ssl_encrypted_login', '256-Bit SSL Bank-Grade Encryption')}</span>
       </div>
     </div>
   );

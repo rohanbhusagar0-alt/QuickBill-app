@@ -12,6 +12,8 @@ interface HomeDashboardProps {
   onNavigate: (screen: AppScreen) => void;
   onSelectCustomer?: (customer: Customer) => void;
   onQuickBillAction?: (bill: Bill) => void;
+  onOpenStoreSetup?: () => void;
+  isFreshStore?: boolean;
 }
 
 export const HomeDashboard: React.FC<HomeDashboardProps> = ({
@@ -20,6 +22,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   customers,
   bills,
   onNavigate,
+  onOpenStoreSetup,
+  isFreshStore = false,
 }) => {
   const { language, t, supportedLanguages } = useLanguage();
   const [showLangModal, setShowLangModal] = useState(false);
@@ -28,20 +32,20 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
   // Financial calculations
   const calculatedSales = bills.reduce((sum, b) => sum + b.grandTotal, 0);
-  const todayTotalSales = calculatedSales > 0 ? calculatedSales : 14850;
+  const todayTotalSales = calculatedSales;
 
   const calculatedCash = bills
     .filter((b) => b.paymentMode === 'CASH' || b.paymentMode === 'SPLIT')
     .reduce((sum, b) => sum + (b.cashAmount || b.grandTotal), 0);
-  const cashSales = calculatedCash > 0 ? calculatedCash : 9200;
+  const cashSales = calculatedCash;
 
   const calculatedUpi = bills
     .filter((b) => b.paymentMode === 'UPI' || b.paymentMode === 'SPLIT')
     .reduce((sum, b) => sum + (b.upiAmount || (b.paymentMode === 'UPI' ? b.grandTotal : 0)), 0);
-  const upiSales = calculatedUpi > 0 ? calculatedUpi : 5650;
+  const upiSales = calculatedUpi;
 
   const calculatedUdhaar = customers.reduce((sum, c) => sum + c.totalUdhaar, 0);
-  const totalUdhaarPending = calculatedUdhaar > 0 ? calculatedUdhaar : 42800;
+  const totalUdhaarPending = calculatedUdhaar;
 
   // Expiry alerts count
   const expiringProducts = products.filter((p) => {
@@ -56,7 +60,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
   const handleRefreshStats = () => {
     setRefreshing(true);
-    speakSoundboxPayment(todayTotalSales, merchant.shopName || 'Sharma General Store', language);
+    speakSoundboxPayment(todayTotalSales, merchant.shopName || 'Apni Dukan', language);
     setTimeout(() => setRefreshing(false), 800);
   };
 
@@ -82,7 +86,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-space-xs">
                 <span className="font-title-md text-title-md text-on-surface truncate font-semibold">
-                  {merchant.shopName || 'Sharma General Store'}
+                  {merchant.shopName || 'Apni Dukan'}
                 </span>
                 <span className="material-symbols-outlined text-primary text-[15px] flex-shrink-0">
                   verified
@@ -140,11 +144,17 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               onClick={() => onNavigate('store_profile')}
               title="Store Profile & Settings"
             >
-              <img
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover ring-1 ring-outline-variant/30 hover:ring-2 hover:ring-emerald-600 transition-all"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgXDHZjALdnObN7V9teuDlyh6xzhDFACJx-T_uAtGcKb6ERAOlGbZfaxW22yEyoNbWck5L5Sk2TuhPcCSfrpl0LU9S7cnPvaF1hmlOHlUcdUrbgOJjOL4CakHy8jOFgfj0TINPI2kGFGz1qbx31wVXpLSh6O169PuKGYk3PQYIuQxkV33ftZsDLoXgJE04Gp3oWtlm26cgHCxma8HFvththdStG6shtXRC14hnoZSWkqKnrCwnhkzq"
-              />
+              {merchant.avatarUrl ? (
+                <img
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover ring-1 ring-outline-variant/30 hover:ring-2 hover:ring-emerald-600 transition-all"
+                  src={merchant.avatarUrl}
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs ring-1 ring-outline-variant/30 hover:ring-2 hover:ring-emerald-600 transition-all shadow-xs">
+                  {merchant.name ? merchant.name.charAt(0).toUpperCase() : (merchant.shopName ? merchant.shopName.charAt(0).toUpperCase() : 'M')}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -153,6 +163,38 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       {/* Main Viewport */}
       <main className="flex-1 flex flex-col relative w-full pt-20 pb-28 bg-surface px-margin max-w-5xl mx-auto">
         <div className="flex flex-col w-full pb-6 gap-space-lg">
+          {/* Live Production Store Banner with 1-Click Store Setup Switcher */}
+          <div className="w-full rounded-2xl bg-gradient-to-r from-emerald-900 via-slate-900 to-emerald-950 p-4 text-white shadow-md flex items-center justify-between border border-emerald-500/30">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-emerald-700/80 border border-emerald-500/40 text-emerald-300 flex items-center justify-center font-bold text-lg shrink-0">
+                🏪
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-sm sm:text-base text-white truncate">
+                    {merchant.shopName || 'Apni Dukan'}
+                  </span>
+                  <span className="text-[10px] font-black bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                    {bills.length === 0 ? 'Fresh Store (₹0)' : 'Live Store'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-300 mt-0.5 truncate">
+                  Owner: <span className="text-white font-semibold">{merchant.name || 'Store Owner'}</span> • 🇮🇳 Mumbai Cloud Synced (asia-south1)
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={onOpenStoreSetup}
+              className="py-2 px-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-xs active:scale-95"
+              title="Dukan Setup & Reset"
+            >
+              <span className="material-symbols-outlined text-[16px]">tune</span>
+              <span className="hidden sm:inline">Dukan Setup</span>
+              <span className="sm:hidden">Setup</span>
+            </button>
+          </div>
+
           {/* Revenue & Inflow Summary Master Card - From User HTML */}
           <div className="w-full rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md border border-outline-variant/20">
             {/* Top Row: Today's Revenue + Comparison */}
@@ -168,10 +210,16 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   <span className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">
                     ₹{todayTotalSales.toLocaleString('en-IN')}
                   </span>
-                  <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant">
-                    <span className="material-symbols-outlined text-[13px] font-bold">trending_up</span>
-                    <span className="font-label-md text-label-md font-bold">+18%</span>
-                  </div>
+                  {todayTotalSales > 0 ? (
+                    <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant">
+                      <span className="material-symbols-outlined text-[13px] font-bold">trending_up</span>
+                      <span className="font-label-md text-label-md font-bold">+18%</span>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                      Zero Sales (Fresh Store)
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
@@ -194,6 +242,25 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 </button>
               </div>
             </div>
+
+            {/* First Bill Encouragement when Fresh Store is active */}
+            {isFreshStore && todayTotalSales === 0 && (
+              <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="material-symbols-outlined text-emerald-700 text-[20px]">store</span>
+                  <span className="text-emerald-950 font-medium">
+                    Aapka fresh store taiyaar hai! Pehla bill banane ke liye direct billing shuru karein.
+                  </span>
+                </div>
+                <button
+                  onClick={() => onNavigate('create_bill')}
+                  className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg text-xs cursor-pointer shadow-xs shrink-0 flex items-center gap-1 transition-transform active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[15px]">add</span>
+                  <span>+ Naya Bill Banayein</span>
+                </button>
+              </div>
+            )}
 
             {/* Middle Split: Cash vs UPI Breakdown */}
             <div className="grid grid-cols-2 gap-space-sm pt-space-xs">
@@ -831,8 +898,10 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                         <tr key={idx} className="hover:bg-surface-container-high/40 transition-colors">
                           <td className="py-2 px-2.5 text-center text-on-surface-variant font-mono text-[11px]">{idx + 1}</td>
                           <td className="py-2 px-2">
-                            <div className="font-bold text-on-surface leading-tight">{item.name}</div>
-                            {item.nameHindi && (
+                            <div className="font-bold text-on-surface leading-tight">
+                              {language === 'en' ? item.name : (item.nameHindi || item.name)}
+                            </div>
+                            {language !== 'en' && item.nameHindi && (
                               <div className="text-[10px] text-on-surface-variant">{item.nameHindi}</div>
                             )}
                           </td>

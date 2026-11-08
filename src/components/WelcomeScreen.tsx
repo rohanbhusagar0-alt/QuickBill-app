@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppScreen, Language } from '../types';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, Phone, CheckCircle2, ShoppingBag, Globe2, Check } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Zap, Phone, CheckCircle2, ShoppingBag, Globe2 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { LanguageSelectorModal } from './LanguageSelectorModal';
 
@@ -31,7 +31,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <div className="flex items-center justify-between pt-2 pb-3">
           <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full text-xs font-semibold text-primary">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-            <span>{t('made_in_india', '100% मुफ़्त मेड इन इंडिया 🇮🇳')}</span>
+            <span>{t('made_in_india', 'Made in India 🇮🇳')}</span>
           </div>
 
           <button
@@ -42,40 +42,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <span>{supportedLanguages.find((l) => l.code === language)?.native || 'हिन्दी'}</span>
             <span className="text-[10px] bg-primary/10 text-primary px-1 rounded ml-0.5 font-bold">▼</span>
           </button>
-        </div>
-
-        {/* Quick Language Switcher Pills */}
-        <div className="bg-surface-container-lowest border border-outline-variant/30 p-2.5 rounded-2xl mb-4 shadow-2xs">
-          <div className="text-[11px] text-on-surface-variant font-semibold mb-2 flex items-center justify-between px-1">
-            <span className="flex items-center gap-1.5">
-              <Globe2 className="w-3.5 h-3.5 text-primary" />
-              <span>{t('change_language', 'अपनी भाषा चुनें (Choose Language):')}</span>
-            </span>
-            <span className="text-[10px] text-primary font-bold">
-              ✓ {supportedLanguages.find((l) => l.code === language)?.native}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            {supportedLanguages.map((l) => {
-              const active = language === l.code;
-              return (
-                <button
-                  key={l.code}
-                  type="button"
-                  onClick={() => handleLangSelect(l.code)}
-                  className={`py-1.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
-                    active
-                      ? 'bg-primary text-white border-primary shadow-xs'
-                      : 'bg-surface hover:bg-surface-container border-outline-variant/30 text-on-surface'
-                  }`}
-                >
-                  <span className="text-sm select-none">{l.flag}</span>
-                  <span className="truncate">{l.native}</span>
-                  {active && <Check className="w-3 h-3 stroke-[3]" />}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Hero Logo & Branding */}

@@ -13,6 +13,7 @@ import {
   orderBy,
   serverTimestamp,
   writeBatch,
+  increment,
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore';
@@ -25,7 +26,7 @@ import {
   User,
 } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { Bill, Customer, MerchantProfile, Product } from '../types';
+import { Bill, BillItem, Customer, MerchantProfile, Product } from '../types';
 import {
   initialMerchant,
   initialCustomers,
@@ -36,6 +37,22 @@ import {
 // India Datacenter Region (asia-south1 / Mumbai, India)
 export const DATA_CENTER_REGION = 'asia-south1 (Mumbai, India)';
 export const DEFAULT_MERCHANT_ID = 'sharma-kirana-main';
+
+/**
+ * Returns dynamic unique merchant ID based on verified phone, Firebase Auth UID, or local session
+ */
+export function getStoreMerchantId(phone?: string, uid?: string): string {
+  if (uid) return `merchant_${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+  if (phone) {
+    const clean = phone.replace(/\D/g, '');
+    if (clean) return `merchant_ph_${clean}`;
+  }
+  const saved = localStorage.getItem('quickbill_merchant_id');
+  if (saved) return saved;
+  const newId = `merchant_${Date.now().toString(36)}`;
+  localStorage.setItem('quickbill_merchant_id', newId);
+  return newId;
+}
 
 // 1. Initialize Firebase App
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -167,7 +184,10 @@ export async function validateIndiaDatacenterConnection(): Promise<boolean> {
 validateIndiaDatacenterConnection();
 
 // 7. Seed Initial Indian Kirana Data if Cloud is Fresh
-export async function initializeStoreCloudData(merchantId: string = DEFAULT_MERCHANT_ID) {
+export async function initializeStoreCloudData(
+  merchantId: string = getStoreMerchantId(),
+  isDemoSeed: boolean = false
+) {
   try {
     const merchantDocRef = doc(db, 'merchants', merchantId);
     const merchantSnap = await getDoc(merchantDocRef);
@@ -175,10 +195,12 @@ export async function initializeStoreCloudData(merchantId: string = DEFAULT_MERC
     if (!merchantSnap.exists()) {
       const batch = writeBatch(db);
 
-      // Merchant
+      // Merchant document
       batch.set(merchantDocRef, {
-        ...initialMerchant,
         id: merchantId,
+        shopName: '',
+        name: '',
+        phone: '',
         country: 'IN',
         region: DATA_CENTER_REGION,
         createdAt: serverTimestamp(),
@@ -186,67 +208,66 @@ export async function initializeStoreCloudData(merchantId: string = DEFAULT_MERC
       });
 
       // Default Staff Owner
-      const staffRef = doc(db, 'merchants', merchantId, 'staff', 'owner-rajesh');
+      const staffRef = doc(db, 'merchants', merchantId, 'staff', 'owner-main');
       batch.set(staffRef, {
-        id: 'owner-rajesh',
+        id: 'owner-main',
         merchantId,
-        name: 'Rajesh Sharma (Owner)',
+        name: 'Store Owner',
         role: 'owner',
-        phone: '9876543210',
-        pin: '1234',
         active: true,
         lastLogin: new Date().toISOString(),
       });
 
-      // Seed customers
-      for (const cust of initialCustomers) {
-        const custRef = doc(db, 'merchants', merchantId, 'customers', cust.id);
-        batch.set(custRef, {
-          ...cust,
-          merchantId,
-          createdAt: serverTimestamp(),
-        });
-      }
+      // Only seed initial Kirana inventory if explicitly requested (demo mode)
+      if (isDemoSeed) {
+        for (const cust of initialCustomers) {
+          const custRef = doc(db, 'merchants', merchantId, 'customers', cust.id);
+          batch.set(custRef, {
+            ...cust,
+            merchantId,
+            createdAt: serverTimestamp(),
+          });
+        }
 
-      // Seed products
-      for (const prod of initialProducts) {
-        const prodRef = doc(db, 'merchants', merchantId, 'products', prod.id);
-        batch.set(prodRef, {
-          ...prod,
-          merchantId,
-          createdAt: serverTimestamp(),
-        });
-      }
+        for (const prod of initialProducts) {
+          const prodRef = doc(db, 'merchants', merchantId, 'products', prod.id);
+          batch.set(prodRef, {
+            ...prod,
+            merchantId,
+            createdAt: serverTimestamp(),
+          });
+        }
 
-      // Seed bills
-      for (const bill of initialBills) {
-        const billRef = doc(db, 'merchants', merchantId, 'bills', bill.id);
-        batch.set(billRef, {
-          ...bill,
-          merchantId,
-          createdAt: serverTimestamp(),
-        });
+        for (const bill of initialBills) {
+          const billRef = doc(db, 'merchants', merchantId, 'bills', bill.id);
+          batch.set(billRef, {
+            ...bill,
+            merchantId,
+            createdAt: serverTimestamp(),
+          });
+        }
       }
 
       await batch.commit();
-      console.log('[QuickBill Cloud] Seeded initial Kirana inventory and ledgers to India Cloud.');
+      console.log(`[QuickBill Cloud] Initialized store backend for ${merchantId} (demoSeed: ${isDemoSeed})`);
     }
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, `merchants/${merchantId}`);
   }
 }
 
-// 8. Atomic Batch Write for Bills & Customer Udhaar
+// 8. Atomic Batch Write for Bills, Customer Udhaar & Real-time Product Stock Deduction
 export async function syncBillWithLedgerBatch(
   bill: Bill,
   customerUdhaarChange?: { customerId: string; newBalance: number; debitAmount: number },
-  merchantId: string = DEFAULT_MERCHANT_ID
+  merchantId: string = getStoreMerchantId(),
+  itemsToDeduct?: BillItem[]
 ): Promise<void> {
   try {
     notifySyncStatus('syncing');
     const batch = writeBatch(db);
 
-    // Save Bill
+    // 1. Save Bill
     const billRef = doc(db, 'merchants', merchantId, 'bills', bill.id);
     batch.set(billRef, {
       ...bill,
@@ -254,7 +275,25 @@ export async function syncBillWithLedgerBatch(
       syncedAt: serverTimestamp(),
     });
 
-    // Update customer Udhaar balance and ledger atomically
+    // 2. Real-time Inventory Stock Deduction via Firestore atomic increment(-qty)
+    const items = itemsToDeduct || bill.items;
+    if (items && items.length > 0) {
+      for (const item of items) {
+        if (item.productId) {
+          const prodRef = doc(db, 'merchants', merchantId, 'products', item.productId);
+          batch.set(
+            prodRef,
+            {
+              stockQty: increment(-item.qty),
+              updatedAt: serverTimestamp(),
+            },
+            { merge: true }
+          );
+        }
+      }
+    }
+
+    // 3. Update customer Udhaar balance and ledger atomically
     if (customerUdhaarChange && customerUdhaarChange.customerId) {
       const custRef = doc(db, 'merchants', merchantId, 'customers', customerUdhaarChange.customerId);
       batch.set(
@@ -296,15 +335,19 @@ export async function syncBillWithLedgerBatch(
 }
 
 // 9. Standard syncBillToCloud helper
-export async function syncBillToCloud(bill: Bill, merchantId: string = DEFAULT_MERCHANT_ID): Promise<void> {
-  return syncBillWithLedgerBatch(bill, undefined, merchantId);
+export async function syncBillToCloud(
+  bill: Bill,
+  merchantId: string = getStoreMerchantId(),
+  itemsToDeduct?: BillItem[]
+): Promise<void> {
+  return syncBillWithLedgerBatch(bill, undefined, merchantId, itemsToDeduct || bill.items);
 }
 
 // 10. Update Customer Udhaar balance
 export async function syncCustomerUdhaarToCloud(
   customerId: string,
   newBalance: number,
-  merchantId: string = DEFAULT_MERCHANT_ID
+  merchantId: string = getStoreMerchantId()
 ): Promise<void> {
   try {
     notifySyncStatus('syncing');
@@ -323,10 +366,98 @@ export async function syncCustomerUdhaarToCloud(
   }
 }
 
-// 11. Real-time Subscriptions with Local Cache Resiliency
+// 11. Store Profile & Bank Cloud Synchronization
+export async function syncStoreProfileToCloud(
+  merchantId: string = getStoreMerchantId(),
+  profile: Partial<MerchantProfile>
+): Promise<void> {
+  try {
+    notifySyncStatus('syncing');
+    const merchantRef = doc(db, 'merchants', merchantId);
+    await setDoc(
+      merchantRef,
+      {
+        ...profile,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    notifySyncStatus('online_synced');
+  } catch (err) {
+    handleFirestoreError(err, OperationType.UPDATE, `merchants/${merchantId}`);
+  }
+}
+
+export async function syncProductToCloud(
+  product: Product,
+  merchantId: string = getStoreMerchantId()
+): Promise<void> {
+  try {
+    notifySyncStatus('syncing');
+    const prodRef = doc(db, 'merchants', merchantId, 'products', product.id);
+    await setDoc(
+      prodRef,
+      {
+        ...product,
+        merchantId,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    notifySyncStatus('online_synced');
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, `merchants/${merchantId}/products/${product.id}`);
+  }
+}
+
+export async function syncCustomerToCloud(
+  customer: Customer,
+  merchantId: string = getStoreMerchantId()
+): Promise<void> {
+  try {
+    notifySyncStatus('syncing');
+    const custRef = doc(db, 'merchants', merchantId, 'customers', customer.id);
+    await setDoc(
+      custRef,
+      {
+        ...customer,
+        merchantId,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    notifySyncStatus('online_synced');
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, `merchants/${merchantId}/customers/${customer.id}`);
+  }
+}
+
+export async function syncBankAccountToCloud(
+  merchantId: string = getStoreMerchantId(),
+  bankAccount: { id: string; bankName: string; accountNumber: string; ifsc?: string; ifscCode?: string; isPrimary?: boolean }
+): Promise<void> {
+  try {
+    notifySyncStatus('syncing');
+    const bankRef = doc(db, 'merchants', merchantId, 'bank_accounts', bankAccount.id);
+    await setDoc(
+      bankRef,
+      {
+        ...bankAccount,
+        merchantId,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    notifySyncStatus('online_synced');
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, `merchants/${merchantId}/bank_accounts/${bankAccount.id}`);
+  }
+}
+
+// 12. Real-time Subscriptions with Local Cache Resiliency
 export function subscribeToBills(
   onUpdate: (bills: Bill[]) => void,
-  merchantId: string = DEFAULT_MERCHANT_ID
+  merchantId: string = getStoreMerchantId()
 ) {
   const billsCol = collection(db, 'merchants', merchantId, 'bills');
   const q = query(billsCol, orderBy('date', 'desc'));
@@ -347,7 +478,7 @@ export function subscribeToBills(
 
 export function subscribeToCustomers(
   onUpdate: (customers: Customer[]) => void,
-  merchantId: string = DEFAULT_MERCHANT_ID
+  merchantId: string = getStoreMerchantId()
 ) {
   const custCol = collection(db, 'merchants', merchantId, 'customers');
 
@@ -367,7 +498,7 @@ export function subscribeToCustomers(
 
 export function subscribeToProducts(
   onUpdate: (products: Product[]) => void,
-  merchantId: string = DEFAULT_MERCHANT_ID
+  merchantId: string = getStoreMerchantId()
 ) {
   const prodCol = collection(db, 'merchants', merchantId, 'products');
 

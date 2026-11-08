@@ -28,6 +28,17 @@ export const SUPPORTED_LANGUAGES = supportedLanguages;
 
 export const translations: Record<Language, Record<string, string>> = {
   hi: {
+    or_divider: "या (OR)",
+    login_with_google: "Google खाते से लॉगिन करें",
+    autofill_sms_otp: "SMS OTP ऑटो-फिल करें (7890)",
+    enter_valid_otp_error: "कृपया 4-अंकीय OTP दर्ज करें या नीचे दिए बटन से ऑटो-फिल करें",
+    connecting: "कनेक्ट हो रहा है...",
+    cat_mobile: "मोबाइल एवं इलेक्ट्रॉनिक्स",
+    cat_clothing: "कपड़े एवं गारमेंट्स",
+    cat_hardware: "हार्डवेयर एवं सेनेटरी",
+    cat_fruits: "फल एवं हरी सब्जियां",
+    cat_bakery: "बेकरी एवं डेयरी",
+    cat_stationery: "स्टेशनरी एवं गिफ्ट शॉप",
     home: "होम",
     khata: "खाता बही",
     new_bill: "नया बिल",
@@ -113,7 +124,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill & खाता AI',
     app_tagline: 'भारत का #1 स्मार्ट बिलिंग, खाता, AI बोलकर पर्ची और स्टॉक अलर्ट ऐप',
     active_badge: 'लाइव (Live)',
-    made_in_india: '100% मुफ़्त मेड इन इंडिया 🇮🇳',
+    made_in_india: 'मेड इन इंडिया 🇮🇳',
     trusted_merchants: '5,00,000+ दुकानदार व व्यापारियों का भरोसा',
     gst_active: 'GST सक्रिय',
     change_language: 'भाषा बदलें (Language)',
@@ -265,6 +276,17 @@ export const translations: Record<Language, Record<string, string>> = {
   },
 
   en: {
+    or_divider: "OR",
+    login_with_google: "Sign in with Google",
+    autofill_sms_otp: "Auto-fill SMS OTP (7890)",
+    enter_valid_otp_error: "Please enter 4-digit OTP or tap auto-fill below",
+    connecting: "Connecting...",
+    cat_mobile: "Mobile & Electronics",
+    cat_clothing: "Clothing & Garments",
+    cat_hardware: "Hardware & Sanitary",
+    cat_fruits: "Fruits & Vegetables",
+    cat_bakery: "Bakery & Dairy",
+    cat_stationery: "Stationery & Gift Shop",
     home: "Home",
     khata: "Khata Book",
     new_bill: "New Bill",
@@ -352,7 +374,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill & Khata AI',
     app_tagline: "India's #1 Smart Billing, Khata, AI Voice Invoice & Stock Alert App",
     active_badge: 'Live',
-    made_in_india: '100% Free Made in India 🇮🇳',
+    made_in_india: 'Made in India 🇮🇳',
     trusted_merchants: 'Trusted by 5,00,000+ Dukan & Store Owners',
     gst_active: 'GST Active',
     change_language: 'Change Language',
@@ -503,6 +525,17 @@ export const translations: Record<Language, Record<string, string>> = {
   },
 
   hinglish: {
+    or_divider: "Ya (OR)",
+    login_with_google: "Google Account se Login karein",
+    autofill_sms_otp: "SMS OTP Auto-fill karein (7890)",
+    enter_valid_otp_error: "Kripya 4-digit OTP darj karein ya auto-fill dabayein",
+    connecting: "Connect ho raha hai...",
+    cat_mobile: "Mobile & Electronics",
+    cat_clothing: "Clothing & Garments",
+    cat_hardware: "Hardware & Sanitary",
+    cat_fruits: "Fruits & Vegetables",
+    cat_bakery: "Bakery & Dairy",
+    cat_stationery: "Stationery & Gift Shop",
     home: "Home",
     khata: "Khata Book",
     new_bill: "New Bill",
@@ -590,7 +623,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill & Khata AI',
     app_tagline: 'Bharat ka #1 Smart Billing, Khata, AI Bolkar Parchi & Stock Alert App',
     active_badge: 'Live',
-    made_in_india: '100% Free Made in India 🇮🇳',
+    made_in_india: 'Made in India 🇮🇳',
     trusted_merchants: '5,00,000+ Dukandar aur Vyapariyon ka Bharosa',
     gst_active: 'GST Active',
     change_language: 'Language Badlein',
@@ -827,7 +860,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill आणि खाते AI',
     app_tagline: 'भारतातील #1 स्मार्ट बिलिंग, खातेवही, AI बोलून पावती आणि स्टॉक अलर्ट ॲप',
     active_badge: 'थेट (Live)',
-    made_in_india: '100% मोफत मेड इन इंडिया 🇮🇳',
+    made_in_india: 'मेड इन इंडिया 🇮🇳',
     trusted_merchants: '5,00,000+ दुकानदार व व्यापाऱ्यांचा विश्वास',
     gst_active: 'GST सक्रिय',
     change_language: 'भाषा बदला (Language)',
@@ -1064,7 +1097,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill અને ખાતા AI',
     app_tagline: 'ભારતની #1 સ્માર્ટ બિલિંગ, ખાતાવહી, AI બોલીને રસીદ અને સ્ટોક ઍપ',
     active_badge: 'લાઇવ (Live)',
-    made_in_india: '100% મફત મેડ ઇન ઇન્ડિયા 🇮🇳',
+    made_in_india: 'મેડ ઇન ઇન્ડિયા 🇮🇳',
     trusted_merchants: '5,00,000+ દુકાનદારો અને વેપારીઓનો વિશ્વાસ',
     gst_active: 'GST સક્રિય',
     change_language: 'ભાષા બદલો (Language)',
@@ -1301,7 +1334,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill & கணக்கு AI',
     app_tagline: 'இந்தியாவின் #1 ஸ்மார்ட் பில்லிங், கணக்கு புத்தகம் & AI குரல் ரசீது செயலி',
     active_badge: 'நேரலை (Live)',
-    made_in_india: '100% இலவச மேட் இன் இந்தியா 🇮🇳',
+    made_in_india: 'மேட் இன் இந்தியா 🇮🇳',
     trusted_merchants: '5,00,000+ கடை உரிமையாளர்களின் நம்பிக்கை',
     gst_active: 'GST செயல்படுகிறது',
     change_language: 'மொழியை மாற்றவும்',
@@ -1538,7 +1571,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill এবং খাতা AI',
     app_tagline: 'ভারতের #1 স্মার্ট বিলিং, খাতা, AI ভয়েস ইনভয়েস এবং স্টক অ্যাপ',
     active_badge: 'লাইভ (Live)',
-    made_in_india: '১০০% বিনামূল্যে মেড ইন ইন্ডিয়া 🇮🇳',
+    made_in_india: 'মেড ইন ইন্ডিয়া 🇮🇳',
     trusted_merchants: '৫,০০,০০০+ দোকানদার ও ব্যবসায়ীদের ভরসা',
     gst_active: 'GST সক্রিয়',
     change_language: 'ভাষা পরিবর্তন করুন',
@@ -1775,7 +1808,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill & ఖాతా AI',
     app_tagline: 'భారతదేశం #1 స్మార్ట్ బిల్లింగ్, ఖాతా పుస్తకం, AI వాయిస్ ఇన్వాయిస్ & స్టాక్ యాప్',
     active_badge: 'ప్రత్యక్షం (Live)',
-    made_in_india: '100% ఉచిత మేడ్ ఇన్ ఇండియా 🇮🇳',
+    made_in_india: 'మేడ్ ఇన్ ఇండియా 🇮🇳',
     trusted_merchants: '5,00,000+ దుకాణదారులు & వ్యాపారుల నమ్మకం',
     gst_active: 'GST సక్రియం',
     change_language: 'భాషను మార్చండి',
@@ -2012,7 +2045,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill & ಖಾತೆ AI',
     app_tagline: 'ಭಾರತದ #1 ಸ್ಮಾರ್ಟ್ ಬಿಲ್ಲಿಂಗ್, ಖಾತೆ ಪುಸ್ತಕ, AI ಧ್ವನಿ ಇನ್‌ವಾಯ್ಸ್ & ಸ್ಟಾಕ್ ಆ್ಯಪ್',
     active_badge: 'ಲೈವ್ (Live)',
-    made_in_india: '100% ಉಚಿತ ಮೇಡ್ ಇನ್ ಇಂಡಿಯಾ 🇮🇳',
+    made_in_india: 'ಮೇಡ್ ಇನ್ ಇಂಡಿಯಾ 🇮🇳',
     trusted_merchants: '5,00,000+ ಅಂಗಡಿಕಾರರು & ವ್ಯಾಪಾರಿಗಳ ನಂಬಿಕೆ',
     gst_active: 'GST ಸಕ್ರಿಯ',
     change_language: 'ಭಾಷೆಯನ್ನು ಬದಲಾಯಿಸಿ',
@@ -2249,7 +2282,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill & ഖാത്ത AI',
     app_tagline: 'ഇന്ത്യയിലെ #1 സ്മാർട്ട് ബില്ലിംഗ്, ഖാത്ത പുസ്തകം, AI വോയ്സ് ഇൻവോയ്സ് & സ്റ്റോക്ക് ആപ്പ്',
     active_badge: 'തത്സമയം (Live)',
-    made_in_india: '100% സൗജന്യം മെയ്ഡ് ഇൻ ഇന്ത്യ 🇮🇳',
+    made_in_india: 'മെയ്ഡ് ഇൻ ഇന്ത്യ 🇮🇳',
     trusted_merchants: '5,00,000+ വ്യാപാരികളുടെ വിശ്വസ്ത ആപ്പ്',
     gst_active: 'GST സജീവം',
     change_language: 'ഭാഷ മാറ്റുക',
@@ -2486,7 +2519,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill ਅਤੇ ਖਾਤਾ AI',
     app_tagline: 'ਭਾਰਤ ਦਾ #1 ਸਮਾਰਟ ਬਿਲਿੰਗ, ਖਾਤਾ ਵਹੀ, AI ਬੋਲ ਕੇ ਬਿੱਲ ਅਤੇ ਸਟਾਕ ਐਪ',
     active_badge: 'ਲਾਈਵ (Live)',
-    made_in_india: '100% ਮੁਫ਼ਤ ਮੇਡ ਇਨ ਇੰਡੀਆ 🇮🇳',
+    made_in_india: 'ਮੇਡ ਇਨ ਇੰਡੀਆ 🇮🇳',
     trusted_merchants: '5,00,000+ ਦੁਕਾਨਦਾਰਾਂ ਅਤੇ ਵਪਾਰੀਆਂ ਦਾ ਭਰੋਸਾ',
     gst_active: 'GST ਸਰਗਰਮ',
     change_language: 'ਭਾਸ਼ਾ ਬਦਲੋ',
@@ -2723,7 +2756,7 @@ export const translations: Record<Language, Record<string, string>> = {
     app_subtitle: 'QuickBill & ଖାତା AI',
     app_tagline: 'ଭାରତର #1 ସ୍ମାର୍ଟ ବିଲିଂ, ଖାତା ବହି, AI କହି ବିଲ୍ ଏବଂ ଷ୍ଟକ୍ ଆପ୍',
     active_badge: 'ଲାଇଭ୍ (Live)',
-    made_in_india: '100% ମାଗଣା ମେଡ୍ ଇନ୍ ଇଣ୍ଡିଆ 🇮🇳',
+    made_in_india: 'ମେଡ୍ ଇନ୍ ଇଣ୍ଡିଆ 🇮🇳',
     trusted_merchants: '5,00,000+ ଦୋକାନୀ ଓ ବ୍ୟବସାୟୀଙ୍କ ବିଶ୍ୱାସ',
     gst_active: 'GST ସକ୍ରିୟ',
     change_language: 'ଭାଷା ବଦଳାନ୍ତୁ',
@@ -2903,13 +2936,11 @@ export function getTranslation(lang: Language, key: string, fallback?: string): 
     return moreTranslations[lang][key];
   }
 
-  // English requested
+  // English requested: strictly never return any Devanagari text
   if (lang === 'en') {
     if (translations.en && translations.en[key]) return translations.en[key];
     if (moreTranslations.en && moreTranslations.en[key]) return moreTranslations.en[key];
-    // Only use fallback if it is NOT Hindi/Devanagari
     if (fallback && !/[\u0900-\u097F]/.test(fallback)) return fallback;
-    // Format key into readable English title
     return key
       .replace(/_/g, ' ')
       .replace(/\b\w/g, (c) => c.toUpperCase());
@@ -2922,13 +2953,23 @@ export function getTranslation(lang: Language, key: string, fallback?: string): 
     if (fallback && /[\u0900-\u097F]/.test(fallback)) return fallback;
   }
 
-  // Generic fallback if provided
-  if (fallback) {
-    return fallback;
+  // Hinglish requested
+  if (lang === 'hinglish') {
+    if (translations.hinglish && translations.hinglish[key]) return translations.hinglish[key];
+    if (moreTranslations.hinglish && moreTranslations.hinglish[key]) return moreTranslations.hinglish[key];
+    if (translations.en && translations.en[key]) return translations.en[key];
   }
 
-  // Ultimate fallback
+  // Regional languages: fallback safely without Devanagari leakage to South/East Indian scripts
+  if (fallback) {
+    const isDevanagari = /[\u0900-\u097F]/.test(fallback);
+    if (!isDevanagari || lang === 'hi' || lang === 'mr') {
+      return fallback;
+    }
+  }
+
   if (translations.en && translations.en[key]) return translations.en[key];
-  if (translations.hi && translations.hi[key]) return translations.hi[key];
+  if (moreTranslations.en && moreTranslations.en[key]) return moreTranslations.en[key];
+  if (fallback && !/[\u0900-\u097F]/.test(fallback)) return fallback;
   return key;
 }

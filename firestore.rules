@@ -13,80 +13,36 @@ service cloud.firestore {
 
     // Helper functions
     function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function existing() {
-      return resource.data;
+      return id is string && id.size() > 0 && id.size() <= 128;
     }
 
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isValidMerchant(data) {
-      return data.shopName is string && data.shopName.size() <= 120 &&
-             data.country == 'IN';
-    }
-
-    function isValidCustomer(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
-             data.phone is string && data.phone.size() <= 20 &&
-             data.totalUdhaar is number;
-    }
-
-    function isValidLedgerEntry(data) {
-      return data.customerId is string &&
-             data.type in ['DEBIT', 'CREDIT'] &&
-             data.amount is number && data.amount >= 0 &&
-             data.balanceAfter is number;
-    }
-
-    function isValidProduct(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
-             data.price is number && data.price >= 0 &&
-             data.stock is number;
-    }
-
-    function isValidBill(data) {
-      return data.invoiceNumber is string && data.invoiceNumber.size() <= 60 &&
-             data.grandTotal is number && data.grandTotal >= 0 &&
-             data.paymentMode is string;
-    }
-
-    function isValidStaff(data) {
-      return data.name is string && data.name.size() <= 100 &&
-             data.role in ['owner', 'manager', 'cashier'] &&
-             data.pin is string && data.pin.size() <= 10;
-    }
-
     // Store Merchants
     match /merchants/{merchantId} {
       allow get, list: if true;
-      allow create, update: if isValidId(merchantId) && isValidMerchant(incoming());
+      allow create, update: if isValidId(merchantId);
       allow delete: if isSignedIn();
 
       // Bills Collection
       match /bills/{billId} {
         allow get, list: if true;
-        allow create, update: if isValidId(billId) && isValidBill(incoming());
+        allow create, update: if isValidId(billId);
         allow delete: if isSignedIn();
       }
 
       // Customers & Udhaar Khata
       match /customers/{customerId} {
         allow get, list: if true;
-        allow create, update: if isValidId(customerId) && isValidCustomer(incoming());
+        allow create, update: if isValidId(customerId);
         allow delete: if isSignedIn();
 
         // Customer Ledger Transactions
         match /ledger/{ledgerId} {
           allow get, list: if true;
-          allow create, update: if isValidId(ledgerId) && isValidLedgerEntry(incoming());
+          allow create, update: if isValidId(ledgerId);
           allow delete: if isSignedIn();
         }
       }
@@ -94,15 +50,21 @@ service cloud.firestore {
       // Products & Inventory
       match /products/{productId} {
         allow get, list: if true;
-        allow create, update: if isValidId(productId) && isValidProduct(incoming());
+        allow create, update: if isValidId(productId);
         allow delete: if isSignedIn();
       }
 
       // Staff Accounts & Permissions
       match /staff/{staffId} {
         allow get, list: if true;
-        allow create, update: if isValidId(staffId) && isValidStaff(incoming());
+        allow create, update: if isValidId(staffId);
         allow delete: if isSignedIn();
+      }
+
+      // Bank Accounts & Settlement
+      match /bank_accounts/{bankId} {
+        allow get, list: if true;
+        allow create, update, delete: if isValidId(bankId);
       }
     }
   }

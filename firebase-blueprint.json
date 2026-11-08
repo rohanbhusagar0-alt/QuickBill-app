@@ -7,7 +7,7 @@
       "properties": {
         "id": { "type": "string", "description": "Merchant ID or Auth UID" },
         "shopName": { "type": "string", "description": "Shop trading name" },
-        "ownerName": { "type": "string", "description": "Merchant owner full name" },
+        "name": { "type": "string", "description": "Merchant owner full name" },
         "phone": { "type": "string", "description": "10-digit Indian mobile number" },
         "email": { "type": "string", "format": "email", "description": "Email address" },
         "gstin": { "type": "string", "description": "15-character GSTIN identifier" },
@@ -33,7 +33,7 @@
         "active": { "type": "boolean" },
         "lastLogin": { "type": "string" }
       },
-      "required": ["name", "role", "phone", "pin"]
+      "required": ["name", "role"]
     },
     "Customer": {
       "title": "Customer",
@@ -76,17 +76,19 @@
         "id": { "type": "string" },
         "merchantId": { "type": "string" },
         "name": { "type": "string" },
-        "price": { "type": "number" },
+        "sellingPrice": { "type": "number" },
+        "purchasePrice": { "type": "number" },
         "mrp": { "type": "number" },
-        "stock": { "type": "number" },
+        "stockQty": { "type": "number" },
+        "godownStock": { "type": "number" },
         "unit": { "type": "string" },
         "category": { "type": "string" },
         "barcode": { "type": "string" },
         "expiryDate": { "type": "string" },
-        "lowStockThreshold": { "type": "number" },
+        "lowStockAlert": { "type": "number" },
         "onlineAvailable": { "type": "boolean" }
       },
-      "required": ["name", "price", "stock", "unit"]
+      "required": ["name", "sellingPrice", "stockQty", "unit"]
     },
     "Bill": {
       "title": "Bill",
@@ -95,7 +97,7 @@
       "properties": {
         "id": { "type": "string" },
         "merchantId": { "type": "string" },
-        "invoiceNumber": { "type": "string" },
+        "billNumber": { "type": "string" },
         "customerName": { "type": "string" },
         "customerPhone": { "type": "string" },
         "grandTotal": { "type": "number" },
@@ -105,7 +107,21 @@
         "status": { "type": "string" },
         "date": { "type": "string" }
       },
-      "required": ["invoiceNumber", "grandTotal", "paymentMode", "status"]
+      "required": ["billNumber", "grandTotal", "paymentMode", "status"]
+    },
+    "BankAccount": {
+      "title": "BankAccount",
+      "description": "Merchant bank settlement account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "bankName": { "type": "string" },
+        "accountNumber": { "type": "string" },
+        "ifsc": { "type": "string" },
+        "isPrimary": { "type": "boolean" }
+      },
+      "required": ["bankName", "accountNumber", "ifsc"]
     }
   },
   "firestore": {
@@ -132,6 +148,10 @@
     "/merchants/{merchantId}/bills/{billId}": {
       "schema": "Bill",
       "description": "Sales invoices and receipts"
+    },
+    "/merchants/{merchantId}/bank_accounts/{bankId}": {
+      "schema": "BankAccount",
+      "description": "Merchant bank payout and settlement accounts"
     }
   }
 }

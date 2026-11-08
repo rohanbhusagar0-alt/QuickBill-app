@@ -57,6 +57,7 @@ export interface MerchantProfile {
   language?: Language;
   preferredLanguage?: string;
   logoUrl?: string;
+  avatarUrl?: string;
   isPro: boolean;
   billFooterNote?: string;
 }
