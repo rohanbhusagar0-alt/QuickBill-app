@@ -63,6 +63,7 @@ import { BankSettlementPayoutsScreen } from './components/BankSettlementPayoutsS
 import { GstEwayBillScreen } from './components/GstEwayBillScreen';
 import { StoreProfileSetupScreen } from './components/StoreProfileSetupScreen';
 import { StoreSetupModal } from './components/StoreSetupModal';
+import { SecurityPinModal } from './components/SecurityPinModal';
 
 // Navigation & Icons
 import {
@@ -78,6 +79,7 @@ import {
   BarChart3,
   Sparkles,
   Plus,
+  Lock,
 } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { LanguageSelectorModal } from './components/LanguageSelectorModal';
@@ -136,6 +138,77 @@ function QuickBillApp() {
 
   // Active isolated merchant identifier (Unique per store/phone/auth user)
   const activeMerchantId = getStoreMerchantId(merchant.phone, auth.currentUser?.uid);
+
+  // Staff Role: 'OWNER' has full access; 'CASHIER' is restricted from Galla, Reports, Settings
+  const [activeStaffRole, setActiveStaffRole] = useState<'OWNER' | 'CASHIER'>(() => {
+    return (localStorage.getItem('quickbill_active_role') as 'OWNER' | 'CASHIER') || 'OWNER';
+  });
+
+  const [showSecurityPinModal, setShowSecurityPinModal] = useState<boolean>(false);
+  const [pendingTargetScreen, setPendingTargetScreen] = useState<AppScreen | null>(null);
+  const [securityModalTitle, setSecurityModalTitle] = useState<string>('');
+  const [securityTargetName, setSecurityTargetName] = useState<string>('');
+
+  const getScreenSecurityLabel = (screen: AppScreen): { isProtected: boolean; label: string } => {
+    switch (screen) {
+      case 'galla_hisab':
+        return { isProtected: true, label: t('galla_hisab', 'Galla Hisab (Cash Drawer)') };
+      case 'reports_gst':
+        return { isProtected: true, label: t('reports', 'Reports & Profit Analytics') };
+      case 'bank_settlement':
+        return { isProtected: true, label: t('bank_settlement', 'Bank Settlement & Payouts') };
+      case 'store_profile':
+        return { isProtected: true, label: t('store_profile', 'Store Profile & Settings') };
+      case 'staff_management':
+        return { isProtected: true, label: t('staff_management', 'Staff Management & Permissions') };
+      default:
+        return { isProtected: false, label: '' };
+    }
+  };
+
+  const handleNavigateWithSecurity = (targetScreen: AppScreen) => {
+    const isPinLockEnabled = localStorage.getItem('quickbill_pin_lock_enabled') !== 'false';
+    const security = getScreenSecurityLabel(targetScreen);
+
+    // If screen is protected, require Owner PIN if Cashier mode is active OR if Owner enabled PIN lock
+    if (security.isProtected && (activeStaffRole === 'CASHIER' || isPinLockEnabled)) {
+      setPendingTargetScreen(targetScreen);
+      setSecurityTargetName(security.label);
+      setSecurityModalTitle(
+        activeStaffRole === 'CASHIER'
+          ? t('owner_pin_required', 'Owner PIN Required')
+          : t('store_security_pin', 'Store Security PIN')
+      );
+      setShowSecurityPinModal(true);
+      return;
+    }
+
+    setCurrentScreen(targetScreen);
+  };
+
+  const handleToggleStaffMode = () => {
+    if (activeStaffRole === 'OWNER') {
+      setActiveStaffRole('CASHIER');
+      localStorage.setItem('quickbill_active_role', 'CASHIER');
+    } else {
+      setPendingTargetScreen(null);
+      setSecurityTargetName(t('owner_mode', 'Owner Admin Mode'));
+      setSecurityModalTitle(t('unlock_owner_mode', 'Enter Owner PIN to Unlock'));
+      setShowSecurityPinModal(true);
+    }
+  };
+
+  const handlePinSuccess = () => {
+    setShowSecurityPinModal(false);
+    if (pendingTargetScreen) {
+      const dest = pendingTargetScreen;
+      setPendingTargetScreen(null);
+      setCurrentScreen(dest);
+    } else {
+      setActiveStaffRole('OWNER');
+      localStorage.setItem('quickbill_active_role', 'OWNER');
+    }
+  };
 
   // Update merchant profile with local persistence & Cloud Firestore sync
   const handleUpdateMerchant = (updated: Partial<MerchantProfile>) => {
@@ -523,9 +596,11 @@ function QuickBillApp() {
             bills={bills}
             customers={customers}
             products={products}
-            onNavigate={setCurrentScreen}
+            onNavigate={handleNavigateWithSecurity}
             onOpenStoreSetup={() => setShowStoreSetupModal(true)}
             isFreshStore={isFreshStore}
+            activeStaffRole={activeStaffRole}
+            onToggleStaffMode={handleToggleStaffMode}
           />
         )}
 
@@ -691,7 +766,7 @@ function QuickBillApp() {
         {currentScreen === 'store_profile' && (
           <StoreProfileSetupScreen
             merchant={merchant}
-            onNavigate={setCurrentScreen}
+            onNavigate={handleNavigateWithSecurity}
             onUpdateMerchant={handleUpdateMerchant}
             onClearDemoData={handleClearDemoData}
             onRestoreDemoData={handleRestoreDemoData}
@@ -740,7 +815,7 @@ function QuickBillApp() {
               return (
                 <button
                   key={item.screen}
-                  onClick={() => setCurrentScreen(item.screen)}
+                  onClick={() => handleNavigateWithSecurity(item.screen)}
                   className={`flex flex-col items-center justify-center p-1 rounded-xl transition-all cursor-pointer relative ${
                     isAction
                       ? '-mt-6 bg-[#047857] hover:bg-[#065f46] text-white p-3.5 rounded-full shadow-lg active:scale-95'
@@ -754,6 +829,11 @@ function QuickBillApp() {
                     {item.badge && (
                       <span className="absolute -top-1.5 -right-2 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white">
                         {item.badge}
+                      </span>
+                    )}
+                    {activeStaffRole === 'CASHIER' && item.screen === 'reports_gst' && (
+                      <span className="absolute -bottom-1 -right-1 bg-amber-500 text-slate-950 p-0.5 rounded-full ring-1 ring-white">
+                        <Lock className="w-2.5 h-2.5" />
                       </span>
                     )}
                   </div>
@@ -779,6 +859,18 @@ function QuickBillApp() {
         onStartFreshStore={handleClearDemoData}
         onRestoreDemoData={handleRestoreDemoData}
         isFreshStore={isFreshStore}
+      />
+
+      {/* Security Gatekeeper PIN Modal */}
+      <SecurityPinModal
+        isOpen={showSecurityPinModal}
+        onClose={() => {
+          setShowSecurityPinModal(false);
+          setPendingTargetScreen(null);
+        }}
+        onSuccess={handlePinSuccess}
+        title={securityModalTitle}
+        targetFeatureName={securityTargetName}
       />
     </div>
   );

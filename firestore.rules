@@ -66,6 +66,12 @@ service cloud.firestore {
         allow get, list: if true;
         allow create, update, delete: if isValidId(bankId);
       }
+
+      // Security Configuration & PIN
+      match /security/{secId} {
+        allow get, list: if true;
+        allow create, update, delete: if isValidId(secId);
+      }
     }
   }
 }

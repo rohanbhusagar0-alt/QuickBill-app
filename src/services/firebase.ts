@@ -535,3 +535,26 @@ export async function logoutUser(): Promise<void> {
 export function subscribeToAuth(onAuthChange: (user: User | null) => void) {
   return onAuthStateChanged(auth, onAuthChange);
 }
+
+// 13. Store Security PIN & RBAC Cloud Synchronization
+export async function syncSecurityPinToCloud(
+  merchantId: string = getStoreMerchantId(),
+  pin: string
+): Promise<void> {
+  try {
+    notifySyncStatus('syncing');
+    const secRef = doc(db, 'merchants', merchantId, 'security', 'config');
+    await setDoc(
+      secRef,
+      {
+        pinHash: pin,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    notifySyncStatus('online_synced');
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, `merchants/${merchantId}/security/config`);
+  }
+}
+

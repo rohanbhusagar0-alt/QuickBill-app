@@ -14,6 +14,8 @@ interface HomeDashboardProps {
   onQuickBillAction?: (bill: Bill) => void;
   onOpenStoreSetup?: () => void;
   isFreshStore?: boolean;
+  activeStaffRole?: 'OWNER' | 'CASHIER';
+  onToggleStaffMode?: () => void;
 }
 
 export const HomeDashboard: React.FC<HomeDashboardProps> = ({
@@ -24,6 +26,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onNavigate,
   onOpenStoreSetup,
   isFreshStore = false,
+  activeStaffRole = 'OWNER',
+  onToggleStaffMode,
 }) => {
   const { language, t, supportedLanguages } = useLanguage();
   const [showLangModal, setShowLangModal] = useState(false);
@@ -192,6 +196,62 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <span className="material-symbols-outlined text-[16px]">tune</span>
               <span className="hidden sm:inline">Dukan Setup</span>
               <span className="sm:hidden">Setup</span>
+            </button>
+          </div>
+
+          {/* Staff Mode & Terminal Security Bar */}
+          <div className="w-full rounded-2xl bg-surface-container-low border border-outline-variant/30 px-3.5 py-2.5 flex items-center justify-between shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
+                  activeStaffRole === 'CASHIER'
+                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                    : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                }`}
+              >
+                {activeStaffRole === 'CASHIER' ? '🛒' : '👑'}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-black text-on-surface truncate">
+                    {activeStaffRole === 'CASHIER'
+                      ? t('cashier_mode_active', 'Counter 01: Cashier Mode (Billing Only)')
+                      : t('owner_mode_active', 'Store Owner: Master Admin Mode')}
+                  </span>
+                  <span
+                    className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase ${
+                      activeStaffRole === 'CASHIER'
+                        ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                        : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                    }`}
+                  >
+                    {activeStaffRole === 'CASHIER' ? 'Restricted' : 'Full Access'}
+                  </span>
+                </div>
+                <p className="text-[10px] text-on-surface-variant truncate">
+                  {activeStaffRole === 'CASHIER'
+                    ? t('cashier_rights_note', 'Profits & Galla locked • Fast billing & barcode scanning enabled')
+                    : t('owner_rights_note', '4-digit PIN protects Galla, Reports & Bank settings')}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={onToggleStaffMode}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer active:scale-95 ${
+                activeStaffRole === 'CASHIER'
+                  ? 'bg-emerald-800 hover:bg-emerald-900 text-white'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                {activeStaffRole === 'CASHIER' ? 'lock_open' : 'lock'}
+              </span>
+              <span>
+                {activeStaffRole === 'CASHIER'
+                  ? t('switch_to_owner', 'Owner Login')
+                  : t('lock_to_cashier', 'Lock Terminal (Cashier)')}
+              </span>
             </button>
           </div>
 

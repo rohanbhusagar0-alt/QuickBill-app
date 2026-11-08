@@ -30,19 +30,22 @@ import {
   ShieldCheck,
   Sliders,
   Trash2,
-  Star
+  Star,
+  Lock,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '../context/LanguageContext';
 import {
   validateIndiaDatacenterConnection,
   syncBankAccountToCloud,
+  syncSecurityPinToCloud,
   getStoreMerchantId,
 } from '../services/firebase';
 import { InstallApkModal } from './InstallApkModal';
 import { AddBankAccountModal, BankAccount } from './AddBankAccountModal';
 import { EditStoreDetailsModal } from './EditStoreDetailsModal';
 import { LanguageSelectorModal } from './LanguageSelectorModal';
+import { SecurityPinModal } from './SecurityPinModal';
 
 interface StoreProfileSetupScreenProps {
   onNavigate: (screen: AppScreen) => void;
@@ -75,6 +78,10 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [showEditShopModal, setShowEditShopModal] = useState(false);
   const [showLangModal, setShowLangModal] = useState(false);
+  const [showChangePinModal, setShowChangePinModal] = useState(false);
+  const [requirePinForSensitive, setRequirePinForSensitive] = useState<boolean>(() => {
+    return localStorage.getItem('quickbill_pin_lock_enabled') !== 'false';
+  });
 
   // Real Bank Accounts State
   const [showAddBankModal, setShowAddBankModal] = useState(false);
@@ -185,6 +192,14 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
     }
     setToastMessage('Default settlement account updated');
     setTimeout(() => setToastMessage(null), 1500);
+  };
+
+  const handlePinChanged = (newPin: string) => {
+    localStorage.setItem('quickbill_security_pin', newPin);
+    syncSecurityPinToCloud(getStoreMerchantId(merchant.phone), newPin);
+    setToastMessage(t('pin_updated_success', 'Security PIN updated successfully!'));
+    setShowChangePinModal(false);
+    setTimeout(() => setToastMessage(null), 2000);
   };
 
   const handleLogout = () => {
@@ -863,6 +878,60 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
             </button>
           </div>
 
+          {/* 4-Digit Store Security PIN */}
+          <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                <Lock className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-slate-900">{t('store_security_pin', '4-Digit Security PIN')}</h4>
+                  <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded">
+                    Active
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500">
+                  {t('pin_protects_note', 'Protects Galla, Reports, Bank Payouts & Settings')}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowChangePinModal(true)}
+              className="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg text-xs shrink-0 cursor-pointer shadow-2xs"
+            >
+              {t('change_pin', 'Change PIN')}
+            </button>
+          </div>
+
+          {/* Require PIN for Galla & Reports Toggle */}
+          <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+            <div>
+              <h4 className="text-xs font-bold text-slate-900">{t('lock_sensitive_screens', 'Lock Galla & Reports with PIN')}</h4>
+              <p className="text-[10px] text-slate-500">
+                {t('lock_sensitive_sub', 'Ask for PIN when opening cash drawer or financial reports')}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                const nextVal = !requirePinForSensitive;
+                setRequirePinForSensitive(nextVal);
+                localStorage.setItem('quickbill_pin_lock_enabled', String(nextVal));
+                setToastMessage(nextVal ? 'Galla & Reports PIN Lock Enabled' : 'PIN Lock Disabled');
+                setTimeout(() => setToastMessage(null), 1500);
+              }}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                requirePinForSensitive ? 'bg-emerald-700' : 'bg-slate-300'
+              }`}
+            >
+              <span
+                className={`block w-5 h-5 rounded-full bg-white shadow-xs transition-transform transform ${
+                  requirePinForSensitive ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+
           {/* Download Full Ledger */}
           <button
             onClick={() => {
@@ -1223,6 +1292,15 @@ export const StoreProfileSetupScreen: React.FC<StoreProfileSetupScreenProps> = (
       <LanguageSelectorModal
         isOpen={showLangModal}
         onClose={() => setShowLangModal(false)}
+      />
+
+      {/* Security PIN Change Modal */}
+      <SecurityPinModal
+        isOpen={showChangePinModal}
+        onClose={() => setShowChangePinModal(false)}
+        onSuccess={() => setShowChangePinModal(false)}
+        isSettingNewPin={true}
+        onPinChanged={handlePinChanged}
       />
     </div>
   );
